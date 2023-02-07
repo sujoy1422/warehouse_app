@@ -75,6 +75,7 @@ class QRViewExample extends StatefulWidget {
   String? rfid;
   String? rfidFlag;
   String? invoiceNo;
+  bool? cameraControll;
 
   QRViewExample({
     super.key,
@@ -85,6 +86,7 @@ class QRViewExample extends StatefulWidget {
     this.rfid,
     this.rfidFlag,
     this.invoiceNo,
+    this.cameraControll,
   });
 
   @override
@@ -95,7 +97,8 @@ class QRViewExample extends StatefulWidget {
       this.loginObject,
       this.rfid,
       this.rfidFlag,
-      this.invoiceNo);
+      this.invoiceNo,
+      this.cameraControll);
 }
 
 class _QRViewExampleState extends State<QRViewExample> {
@@ -109,11 +112,19 @@ class _QRViewExampleState extends State<QRViewExample> {
   String entryType;
   String? rfid;
   String? rfidFlag;
+  bool? cameraControll;
 
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
-  _QRViewExampleState(this.headerId, this.detailId, this.entryType,
-      this.loginObject, this.rfid, this.rfidFlag, this.invoiceNo);
+  _QRViewExampleState(
+      this.headerId,
+      this.detailId,
+      this.entryType,
+      this.loginObject,
+      this.rfid,
+      this.rfidFlag,
+      this.invoiceNo,
+      this.cameraControll);
 
   // In order to get hot reload to work we need to pause the camera if the platform
   // is android, or resume the camera if the platform is iOS.
@@ -255,17 +266,21 @@ class _QRViewExampleState extends State<QRViewExample> {
     });
     controller.scannedDataStream.listen((scanData) {
       setState(() {
+        // cameraControll = true;
         result = scanData;
         if (result != null) {
-          controller.pauseCamera();
           // qrKey
           // context.read<LoginCubit>().getLoginData(empNo, pass, orgId, empCat)
           // context.read<ProfileCubit>().getProfileData(result?.code);
           print(
               "DetailId:${detailId}result:${result!.code} loginObject ${loginObject?.profile?.empNo}entryType$entryType");
-          if (entryType == 2 && rfidFlag != result?.code.toString()) {
+          if (entryType == "2" && rfidFlag != result?.code.toString()) {
+            // controller.pauseCamera();
+
             alertDialog(context, "Warning!", "Scanned ID Must be Same");
           } else {
+            controller.pauseCamera();
+
             context.read<UpdateRfidCubit>().updateRfid(
                 detailId,
                 result?.code.toString() ?? "",

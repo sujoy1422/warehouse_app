@@ -20,6 +20,8 @@ Future<dynamic> logoutDialog(BuildContext context) {
             // Others.notificationsData.value.clear();
             // Others.color.value.clear();
             // Others.item.value = 0;
+            id = "";
+            pass = "";
             Navigator.of(context).pop(true);
             Navigator.pushAndRemoveUntil(
                 context,

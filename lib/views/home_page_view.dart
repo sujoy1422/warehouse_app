@@ -429,16 +429,18 @@ class RollItem extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => QrView(
-                                      headerId: headerId.toString(),
-                                      detailId: rollData.detailId,
-                                      entryType: "2",
-                                      loginObject: loginObject,
-                                      rfid: rollData.rfid,
-                                      rfidFlag: rollData.rfidFlag,
-                                      // qrData: result?.code?.toString(),
-                                      // profileObject: state.profile,
-                                      // loginObject: widget.loginObject,
-                                    ),
+                                        headerId: headerId.toString(),
+                                        detailId: rollData.detailId,
+                                        entryType: "2",
+                                        loginObject: loginObject,
+                                        rfid: rollData.rfid,
+                                        rfidFlag: rollData.rfidFlag,
+                                        invoiceNo: invoiceNo
+
+                                        // qrData: result?.code?.toString(),
+                                        // profileObject: state.profile,
+                                        // loginObject: widget.loginObject,
+                                        ),
                                   ),
                                   (Route<dynamic> route) => false,
                                 );
@@ -452,14 +454,16 @@ class RollItem extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => QrView(
-                                      headerId: headerId.toString(),
-                                      detailId: rollData.detailId,
-                                      entryType: "1",
-                                      loginObject: loginObject,
-                                      // qrData: result?.code?.toString(),
-                                      // profileObject: state.profile,
-                                      // loginObject: widget.loginObject,
-                                    ),
+                                        headerId: headerId.toString(),
+                                        detailId: rollData.detailId,
+                                        entryType: "1",
+                                        loginObject: loginObject,
+                                        invoiceNo: invoiceNo
+
+                                        // qrData: result?.code?.toString(),
+                                        // profileObject: state.profile,
+                                        // loginObject: widget.loginObject,
+                                        ),
                                   ),
                                   (Route<dynamic> route) => false,
                                 );
