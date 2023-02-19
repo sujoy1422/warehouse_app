@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:warehouse_app/views/home_page_view.dart';
 
@@ -254,7 +253,7 @@ ElevatedButton buildLoginButton(
         alertDialog(context, "Warning", "Enter UserID and Password");
       } else {
         // print("UserID: ${id}Password: $pass");
-        context.read<LoginCubit>().getLoginData(id, pass, "344", "0");
+        context.read<LoginCubit>().getLoginData(id, pass, "344", "1");
       }
     },
   );
