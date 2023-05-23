@@ -87,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
 Center loadingScreen() {
   return const Center(
-    child: CircularProgressIndicator(color: Colors.white),
+    child: CircularProgressIndicator(color: Colors.blue),
   );
 }
 

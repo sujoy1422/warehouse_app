@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:searchable_listview/searchable_listview.dart';
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'package:warehouse_app/cubit/inventory_cubit/inventory_cubit.dart';
 import 'package:warehouse_app/cubit/roll_data_cubit/roll_data_cubit.dart';
 import 'package:warehouse_app/models/inventory.dart';
@@ -10,8 +11,12 @@ import 'package:warehouse_app/models/login_object.dart';
 import 'package:warehouse_app/models/roll_data.dart';
 import 'package:warehouse_app/repository/inventory_repository/inventory_repo_impl.dart';
 import 'package:warehouse_app/repository/roll_data_repository/roll_data_repo_impl.dart';
+import 'package:warehouse_app/repository/update_rfid/update_rfid_repo_impl.dart';
+import 'package:warehouse_app/views/alert_dialog.dart';
+import 'package:warehouse_app/views/login_screen.dart';
 import 'package:warehouse_app/views/qr_view.dart';
 
+import '../cubit/update_rfid/update_rfid_cubit.dart';
 import 'logout_dialog.dart';
 import 'logout_widget.dart';
 
@@ -36,7 +41,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Warehosue App"),
+          title: Text("Warehouse App"),
           actions: const <Widget>[
             LogoutWidget(),
           ],
@@ -314,7 +319,7 @@ class _HomePageViewState extends State<HomePageView> {
   }
 }
 
-class RollItem extends StatelessWidget {
+class RollItem extends StatefulWidget {
   LoginObject? loginObject;
   final RollData rollData;
   String? qrData;
@@ -336,6 +341,12 @@ class RollItem extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<RollItem> createState() => _RollItemState();
+}
+
+class _RollItemState extends State<RollItem> {
+  String? result;
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -354,20 +365,20 @@ class RollItem extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Supplier Roll: ${rollData.supplierRoll}',
+                      'Supplier Roll: ${widget.rollData.supplierRoll}',
                       style: const TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
                           fontSize: 17),
                     ),
                     Text(
-                      'Factory Roll: ${rollData.factoryRoll}',
+                      'Factory Roll: ${widget.rollData.factoryRoll}',
                       style: const TextStyle(color: Colors.black, fontSize: 16
                           // fontWeight: FontWeight.bold,
                           ),
                     ),
                     Text(
-                      'Length: ${rollData.rollLength}',
+                      'Length: ${widget.rollData.rollLength}',
                       style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                     Row(
@@ -376,9 +387,9 @@ class RollItem extends StatelessWidget {
                             style:
                                 TextStyle(color: Colors.black, fontSize: 16)),
                         Text(
-                          rollData.rfid ?? "",
+                          widget.rollData.rfid ?? "",
                           style: TextStyle(
-                              color: rollData.rfidFlag == "2"
+                              color: widget.rollData.rfidFlag == "2"
                                   ? Colors.red
                                   : Colors.black,
                               fontSize: 16,
@@ -396,24 +407,45 @@ class RollItem extends StatelessWidget {
                   minimumSize: const Size(10, 55),
                   padding: EdgeInsets.only(left: 4, right: 4),
                 ),
-                onPressed: () {
-                  if (rollData.rfid == null) {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => QrView(
-                            headerId: headerId.toString(),
-                            detailId: rollData.detailId,
-                            entryType: "1",
-                            loginObject: loginObject,
-                            invoiceNo: invoiceNo
-                            // qrData: result?.code?.toString(),
-                            // profileObject: state.profile,
-                            // loginObject: widget.loginObject,
-                            ),
-                      ),
-                      (Route<dynamic> route) => false,
-                    );
+                onPressed: () async {
+                  if (widget.rollData.rfid == null) {
+                    // Navigator.pushAndRemoveUntil(
+                    //   context,
+                    //   MaterialPageRoute(
+                    //     builder: (context) => QrView(
+                    //         headerId: widget.headerId.toString(),
+                    //         detailId: widget.rollData.detailId,
+                    //         entryType: "1",
+                    //         loginObject: widget.loginObject,
+                    //         invoiceNo: widget.invoiceNo
+                    //         // qrData: result?.code?.toString(),
+                    //         // profileObject: state.profile,
+                    //         // loginObject: widget.loginObject,
+                    //         ),
+                    //   ),
+                    //   (Route<dynamic> route) => false,
+                    // );
+                    var res = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const SimpleBarcodeScannerPage(),
+                        ));
+                    setState(() {
+                      if (res is String) {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UpdatedRFID(
+                                headerId: widget.headerId ?? "",
+                                detailId: widget.rollData.detailId,
+                                result: res,
+                                entryType: "1",
+                                loginObject: widget.loginObject,
+                              ),
+                            ));
+                      }
+                    });
                   } else {
                     showDialog(
                       context: context,
@@ -424,49 +456,56 @@ class RollItem extends StatelessWidget {
                           actions: <Widget>[
                             ElevatedButton(
                               child: const Text("Detach"),
-                              onPressed: () {
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => QrView(
-                                        headerId: headerId.toString(),
-                                        detailId: rollData.detailId,
-                                        entryType: "2",
-                                        loginObject: loginObject,
-                                        rfid: rollData.rfid,
-                                        rfidFlag: rollData.rfidFlag,
-                                        invoiceNo: invoiceNo
-
-                                        // qrData: result?.code?.toString(),
-                                        // profileObject: state.profile,
-                                        // loginObject: widget.loginObject,
-                                        ),
-                                  ),
-                                  (Route<dynamic> route) => false,
-                                );
+                              onPressed: () async {
+                                var res = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SimpleBarcodeScannerPage(),
+                                    ));
+                                setState(() {
+                                  if (res is String) {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => UpdatedRFID(
+                                            headerId: widget.headerId ?? "",
+                                            detailId: widget.rollData.detailId,
+                                            result: res,
+                                            entryType: "2",
+                                            rfid: widget.rollData.rfid,
+                                            loginObject: widget.loginObject,
+                                          ),
+                                        ));
+                                  }
+                                });
                                 // FocusScope.of(conte xt).unfocus();
                               },
                             ),
                             ElevatedButton(
                               child: const Text("Attach"),
-                              onPressed: () {
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => QrView(
-                                        headerId: headerId.toString(),
-                                        detailId: rollData.detailId,
-                                        entryType: "1",
-                                        loginObject: loginObject,
-                                        invoiceNo: invoiceNo
-
-                                        // qrData: result?.code?.toString(),
-                                        // profileObject: state.profile,
-                                        // loginObject: widget.loginObject,
-                                        ),
-                                  ),
-                                  (Route<dynamic> route) => false,
-                                );
+                              onPressed: () async {
+                                var res = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SimpleBarcodeScannerPage(),
+                                    ));
+                                setState(() {
+                                  if (res is String) {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => UpdatedRFID(
+                                            headerId: widget.headerId ?? "",
+                                            detailId: widget.rollData.detailId,
+                                            result: res,
+                                            entryType: "1",
+                                            loginObject: widget.loginObject,
+                                          ),
+                                        ));
+                                  }
+                                });
                                 // FocusScope.of(conte xt).unfocus();
                               },
                             ),
@@ -496,4 +535,136 @@ List<String> mapInventoryData(List<Inventory> elementList) {
 List<String> mapRollList(List<RollData> elementList) {
   // return Map.fromIterable(elementList, key: (element) => ,)
   return elementList.map((e) => e.detailId.toString()).toList();
+}
+
+class UpdatedRFID extends StatelessWidget {
+  LoginObject? loginObject;
+  String headerId;
+  String detailId;
+  String entryType;
+  String? rfid;
+  String? rfidFlag;
+  String? invoiceNo;
+  String? result;
+  UpdatedRFID(
+      {super.key,
+      required this.headerId,
+      required this.detailId,
+      required this.entryType,
+      this.loginObject,
+      this.rfid,
+      this.rfidFlag,
+      this.invoiceNo,
+      this.result});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Warehouse App"),
+        actions: const <Widget>[
+          LogoutWidget(),
+        ],
+        automaticallyImplyLeading: false,
+      ),
+      body: BlocProvider(
+        create: (context) => UpdateRfidCubit(UpdateDataRepoImpl()),
+        child:  UpdatedRFIDView(
+            headerId: this.headerId,
+            detailId: this.detailId,
+            entryType: this.entryType,
+            loginObject: this.loginObject,
+            rfid: this.rfid,
+            rfidFlag: this.rfidFlag,
+            invoiceNo: this.invoiceNo,
+            result: this.result),
+      ),
+    );
+  }
+}
+
+class UpdatedRFIDView extends StatefulWidget {
+  LoginObject? loginObject;
+  String headerId;
+  String detailId;
+  String entryType;
+  String? rfid;
+  String? rfidFlag;
+  String? invoiceNo;
+  bool? cameraControll;
+  String? result;
+  UpdatedRFIDView({
+    super.key,
+    required this.headerId,
+    required this.detailId,
+    required this.entryType,
+    this.loginObject,
+    this.rfid,
+    this.rfidFlag,
+    this.invoiceNo,
+    this.cameraControll,
+    this.result,
+  });
+
+  @override
+  State<UpdatedRFIDView> createState() => _UpdatedRFIDViewState();
+}
+
+class _UpdatedRFIDViewState extends State<UpdatedRFIDView> {
+  @override
+  void initState() {
+    // print("${widget.detailId},${widget.result},${widget.loginObject?.profile?.empNo},${}")
+    // if (widget.entryType == "2" && widget.rfid != widget.result) {
+    //   showDialog(
+    //       context: context,
+    //       builder: (BuildContext context) {
+    //         return AlertDialog(
+    //             title: Text("Warning!!"),
+    //             content: Text("detached RFID no. is not the same"),
+    //             actions: <Widget>[
+    //               ElevatedButton(onPressed: () {}, child: Text("Detach Again"))
+    //             ]);
+    //       });
+    // } else {
+      context.read<UpdateRfidCubit>().updateRfid(
+          widget.detailId,
+          widget.result ?? "12345",
+          widget.loginObject?.profile?.empNo ?? "",
+          widget.entryType);
+    // }
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<UpdateRfidCubit, UpdateRfidState>(
+      listener: (context, state) {
+        if (state is UpdateRfidLoaded) {
+          if (state.response != "Data update unsuccessful!") {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomePage(
+                  qrData: widget.result?.toString(),
+                  headerId: widget.headerId,
+                  loginObject: widget.loginObject,
+                  invoiceNo: widget.invoiceNo,
+                ),
+              ),
+              (Route<dynamic> route) => false,
+            );
+          } else {
+            print(state.response);
+          }
+        }
+      },
+      builder: (context, state) {
+        if (state is UpdateRfidLoaded) {
+          return Container();
+        } else {
+          return loadingScreen();
+        }
+      },
+    );
+  }
 }
