@@ -7,7 +7,8 @@ class RollDataRepoImpl implements RollDataRepository {
   @override
   Future<List<RollData>> fetchRollData(
     String headerId,
+    String showAll,
   ) {
-    return WebService().getRollData(headerId);
+    return WebService().getRollData(headerId, showAll);
   }
 }

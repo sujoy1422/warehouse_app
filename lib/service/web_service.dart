@@ -51,9 +51,10 @@ class WebService {
     }
   }
 
-  Future<List<RollData>> getRollData(String headerId) async {
+  Future<List<RollData>> getRollData(String headerId, String showAll) async {
     var formDate = FormData.fromMap({
       'header_id': headerId,
+      'show_all': showAll,
     });
 
     final response = await dio.post(
@@ -69,6 +70,7 @@ class WebService {
     }
   }
 
+  
   Future<ResponseObject> getResponseObject(
       String detailsId, String rfid, String entryBy, String entryType) async {
     var formDate = FormData.fromMap({

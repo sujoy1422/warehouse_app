@@ -1,7 +1,6 @@
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:searchable_listview/searchable_listview.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'package:warehouse_app/cubit/inventory_cubit/inventory_cubit.dart';
@@ -12,9 +11,7 @@ import 'package:warehouse_app/models/roll_data.dart';
 import 'package:warehouse_app/repository/inventory_repository/inventory_repo_impl.dart';
 import 'package:warehouse_app/repository/roll_data_repository/roll_data_repo_impl.dart';
 import 'package:warehouse_app/repository/update_rfid/update_rfid_repo_impl.dart';
-import 'package:warehouse_app/views/alert_dialog.dart';
 import 'package:warehouse_app/views/login_screen.dart';
-import 'package:warehouse_app/views/qr_view.dart';
 
 import '../cubit/update_rfid/update_rfid_cubit.dart';
 import 'logout_dialog.dart';
@@ -99,6 +96,8 @@ class _HomePageViewState extends State<HomePageView> {
   String? detailsId;
   LoginObject? loginObject;
   String? rfid;
+  String showAll = "Show All";
+  bool visible = false;
 
   List<Inventory> inventory = <Inventory>[];
   List<String> inventoryList = [];
@@ -116,7 +115,7 @@ class _HomePageViewState extends State<HomePageView> {
     context.read<InventoryCubit>().getInventoryData("341");
 
     if (headerId != null) {
-      context.read<RollDataCubit>().getRollData(headerId!);
+      context.read<RollDataCubit>().getRollData(headerId!, "0");
     }
     super.initState();
   }
@@ -191,6 +190,8 @@ class _HomePageViewState extends State<HomePageView> {
                         return Container();
                       } else if (state is InventoryLoaded) {
                         print("here");
+
+                        // if(state.inventory)
                         inventoryList.clear();
                         // jobList.value.add("Select a Job");
                         inventoryList.addAll(mapInventoryData(state.inventory));
@@ -244,7 +245,10 @@ class _HomePageViewState extends State<HomePageView> {
                                       state
                                           .inventory[
                                               inventoryList.indexOf(newValue)]
-                                          .headerId!);
+                                          .headerId!,
+                                      "0");
+
+                                  visible = true;
                                 });
                                 //newValue = "";
                               }),
@@ -254,6 +258,32 @@ class _HomePageViewState extends State<HomePageView> {
                       }
                     },
                     listener: (context, state) {}),
+                Visibility(
+                  visible: visible,
+                  child: Container(
+                      alignment: Alignment.topRight,
+                      padding: EdgeInsets.only(right: 10),
+                      child: ElevatedButton(
+                          onPressed: () {
+                            if (showAll == "Show All") {
+                              context
+                                  .read<RollDataCubit>()
+                                  .getRollData(headerId ?? "123", "1");
+                            } else {
+                              context
+                                  .read<RollDataCubit>()
+                                  .getRollData(headerId ?? "123", "0");
+                            }
+                            setState(() {
+                              if (showAll == "Show All") {
+                                showAll = "Hide All";
+                              } else {
+                                showAll = "Show All";
+                              }
+                            });
+                          },
+                          child: Text(showAll))),
+                ),
                 BlocConsumer<RollDataCubit, RollDataState>(
                     builder: (context, state) {
                       if (state is RollDataLoaded) {
@@ -309,7 +339,7 @@ class _HomePageViewState extends State<HomePageView> {
                         return Container();
                       }
                     },
-                    listener: (context, state) {})
+                    listener: (context, state) {}),
               ],
             ),
           ),
@@ -569,7 +599,7 @@ class UpdatedRFID extends StatelessWidget {
       ),
       body: BlocProvider(
         create: (context) => UpdateRfidCubit(UpdateDataRepoImpl()),
-        child:  UpdatedRFIDView(
+        child: UpdatedRFIDView(
             headerId: this.headerId,
             detailId: this.detailId,
             entryType: this.entryType,
@@ -626,11 +656,11 @@ class _UpdatedRFIDViewState extends State<UpdatedRFIDView> {
     //             ]);
     //       });
     // } else {
-      context.read<UpdateRfidCubit>().updateRfid(
-          widget.detailId,
-          widget.result ?? "12345",
-          widget.loginObject?.profile?.empNo ?? "",
-          widget.entryType);
+    context.read<UpdateRfidCubit>().updateRfid(
+        widget.detailId,
+        widget.result ?? "12345",
+        widget.loginObject?.profile?.empNo ?? "",
+        widget.entryType);
     // }
     super.initState();
   }
