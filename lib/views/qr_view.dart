@@ -10,10 +10,7 @@ import 'package:warehouse_app/repository/update_rfid/update_rfid_repo_impl.dart'
 import 'package:warehouse_app/views/alert_dialog.dart';
 import 'package:warehouse_app/views/home_page_view.dart';
 
-import '../cubit/profile_cubit/profile_cubit.dart';
 import '../models/login_object.dart';
-import '../models/profile.dart';
-import '../repository/profile/profile_repo_impl.dart';
 
 // void main() => runApp(const MaterialApp(home: MyHome()));
 
@@ -48,6 +45,8 @@ class QrView extends StatelessWidget {
                       loginObject: loginObject,
                       headerId: headerId,
                       invoiceNo: invoiceNo,
+                      showall: "Show All",
+                      visible: true,
                     )),
             (Route<dynamic> route) => false);
         return Future.value(true);
@@ -175,6 +174,8 @@ class _QRViewExampleState extends State<QRViewExample> {
                               headerId: headerId,
                               loginObject: loginObject,
                               invoiceNo: invoiceNo,
+                              showall: "Show All",
+                              visible: true,
                             ),
                           ),
                           (Route<dynamic> route) => false,

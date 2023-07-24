@@ -7,6 +7,7 @@ class Constants {
       "https://homeoffice.mj-group.com/SelfService/new_api/api_mj_app/";
 
   static const baseUrlWarehouse = "http://192.168.9.247/warehouse_api/";
+  // static const baseUrlWarehouse = "https://homeoffice.mj-group.com/warehouse_api/";
 
   static const authApiUrl = "${baseUrl}app_auth.php";
   static const inventoryUrl = "${baseUrlWarehouse}get_inv_data.php";

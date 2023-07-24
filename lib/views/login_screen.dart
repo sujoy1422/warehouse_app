@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:warehouse_app/utils/constants.dart';
 import 'package:warehouse_app/views/home_page_view.dart';
 
 import '../cubit/login_cubit/login_cubit.dart';
 import '../repository/login_object_repo/login_object_repo_impl.dart';
-import '../utils/constants.dart';
 import 'alert_dialog.dart';
 
 String id = "";
@@ -45,9 +45,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (state.loginObject.auth == "1") {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return HomePage(loginObject: state.loginObject
-                            // title: state.loginObject.auth!,
-                            );
+                        return HomePage(
+                          loginObject: state.loginObject, showall: "Show All",
+                          visible: false,
+                          // title: state.loginObject.auth!,
+                        );
                       }));
                     }
                   }
@@ -120,13 +122,6 @@ Column initialLoginScreen(BuildContext context) {
       ),
       buildLoginButton(context),
       const SizedBox(height: 20),
-      Container(
-        alignment: Alignment.centerRight,
-        child: const Text(
-          Constants.appVersion,
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
       const SizedBox(height: 70)
     ],
   );
@@ -168,16 +163,35 @@ class _BuildTextFieldState extends State<BuildTextField> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          alignment: Alignment.topLeft,
-          child: Text(
-            hintText,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+        Row(
+          children: [
+            Container(
+              alignment: Alignment.topLeft,
+              child: Text(
+                hintText,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          ),
+            Spacer(),
+            Visibility(
+              visible: track == 0 ? true : false,
+              child: Container(
+                alignment: Alignment.topRight,
+                child: Text(
+                  Constants.appVersion,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 10),
         Container(

@@ -25,6 +25,8 @@ class HomePage extends StatelessWidget {
   LoginObject? loginObject;
   String? rfid;
   String? invoiceNo;
+  String showall;
+  bool visible;
 
   HomePage(
       {super.key,
@@ -32,13 +34,15 @@ class HomePage extends StatelessWidget {
       this.headerId,
       this.loginObject,
       this.rfid,
-      this.invoiceNo});
+      this.invoiceNo,
+      required this.showall,
+      required this.visible});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Warehouse App"),
+          title: Text("RFID Attachment"),
           actions: const <Widget>[
             LogoutWidget(),
           ],
@@ -63,6 +67,8 @@ class HomePage extends StatelessWidget {
             loginObject: this.loginObject,
             rfid: this.rfid,
             invoiceNo: this.invoiceNo,
+            showAll: showall,
+            visible: visible,
           ),
         ));
   }
@@ -76,17 +82,28 @@ class HomePageView extends StatefulWidget {
   String? headerId;
   String? invoiceNo;
 
+  String showAll;
+  bool visible;
+
   HomePageView(
       {super.key,
       this.qrData,
       this.headerId,
       this.loginObject,
       this.rfid,
-      this.invoiceNo});
+      this.invoiceNo,
+      required this.showAll,
+      required this.visible});
 
   @override
   State<HomePageView> createState() => _HomePageViewState(
-      this.qrData, this.headerId, this.loginObject, this.rfid, this.invoiceNo);
+      this.qrData,
+      this.headerId,
+      this.loginObject,
+      this.rfid,
+      this.invoiceNo,
+      this.showAll,
+      this.visible);
 }
 
 class _HomePageViewState extends State<HomePageView> {
@@ -96,8 +113,8 @@ class _HomePageViewState extends State<HomePageView> {
   String? detailsId;
   LoginObject? loginObject;
   String? rfid;
-  String showAll = "Show All";
-  bool visible = false;
+  String showAll;
+  bool visible;
 
   List<Inventory> inventory = <Inventory>[];
   List<String> inventoryList = [];
@@ -108,11 +125,11 @@ class _HomePageViewState extends State<HomePageView> {
 
   bool buttonPressed = false;
 
-  _HomePageViewState(
-      this.qrData, this.headerId, this.loginObject, this.rfid, this.invoiceNo);
+  _HomePageViewState(this.qrData, this.headerId, this.loginObject, this.rfid,
+      this.invoiceNo, this.showAll, this.visible);
   @override
   void initState() {
-    context.read<InventoryCubit>().getInventoryData("341");
+    context.read<InventoryCubit>().getInventoryData("342");
 
     if (headerId != null) {
       context.read<RollDataCubit>().getRollData(headerId!, "0");
@@ -276,7 +293,7 @@ class _HomePageViewState extends State<HomePageView> {
                             }
                             setState(() {
                               if (showAll == "Show All") {
-                                showAll = "Hide All";
+                                showAll = "Hide";
                               } else {
                                 showAll = "Show All";
                               }
@@ -287,6 +304,7 @@ class _HomePageViewState extends State<HomePageView> {
                 BlocConsumer<RollDataCubit, RollDataState>(
                     builder: (context, state) {
                       if (state is RollDataLoaded) {
+                        rollData.clear();
                         rollData = state.rolldata;
                         rollList.clear();
                         rollList.addAll(mapRollList(state.rolldata));
@@ -679,6 +697,8 @@ class _UpdatedRFIDViewState extends State<UpdatedRFIDView> {
                   headerId: widget.headerId,
                   loginObject: widget.loginObject,
                   invoiceNo: widget.invoiceNo,
+                  showall: "Show All",
+                  visible: true,
                 ),
               ),
               (Route<dynamic> route) => false,

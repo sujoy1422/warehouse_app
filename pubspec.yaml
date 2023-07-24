@@ -47,7 +47,7 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "lib/assets/warehouse.png"
+  image_path: "lib/assets/rfid_attach_logo.png"
   flutter_lints: ^2.0.0
   flutter_test:
     sdk: flutter
