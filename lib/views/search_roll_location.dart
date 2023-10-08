@@ -1,9 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:searchable_listview/searchable_listview.dart';
 import 'package:warehouse_app/cubit/searchable_roll_list/searchable_roll_list_cubit.dart';
-import 'package:warehouse_app/models/roll_details.dart';
 import 'package:warehouse_app/models/searchable_roll_list.dart';
 import 'package:warehouse_app/repository/searchable_roll_list_repo/searchable_roll_list_repo_impl.dart';
 import 'package:warehouse_app/views/logout_widget.dart';
@@ -47,7 +45,6 @@ class _SearchRollScreenState extends State<SearchRollScreen> {
 
   @override
   Widget build(BuildContext context) {
-    int index;
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     return SingleChildScrollView(

@@ -1,17 +1,15 @@
-import 'package:flutter/cupertino.dart';
+// ignore_for_file: must_be_immutable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'package:warehouse_app/cubit/insert_issuance_list/insert_issuance_list_cubit.dart';
 import 'package:warehouse_app/cubit/inspection_list/inspection_list_cubit.dart';
-import 'package:warehouse_app/models/inspection_list/inspection_list.dart';
 import 'package:warehouse_app/models/login_object.dart';
 import 'package:warehouse_app/repository/insert_inspection_repo/insert_inspection_repo_impl.dart';
 import 'package:warehouse_app/repository/inspection_list_repo/inspection_list_repo_impl.dart';
-import 'package:warehouse_app/repository/inspection_list_repo/inspection_list_repository.dart';
 import 'package:warehouse_app/repository/rfid_for_inspection_repo/rfid_for_inspection_repo_impl.dart';
 import 'package:warehouse_app/views/alert_dialog.dart';
-import 'package:warehouse_app/views/login_screen.dart';
 
 import '../cubit/rfid_for_inspection/rfid_for_inspection_cubit.dart';
 import 'logout_widget.dart';
@@ -85,7 +83,6 @@ class _CreateIssuanceScreenState extends State<CreateIssuanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<InspectionListLoaded> inspectionList;
 
     return Container(
       padding: EdgeInsets.only(right: 10, top: 10, bottom: 10),

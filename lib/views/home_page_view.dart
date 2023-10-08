@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,7 +14,6 @@ import 'package:warehouse_app/repository/inventory_repository/inventory_repo_imp
 import 'package:warehouse_app/repository/roll_data_repository/roll_data_repo_impl.dart';
 import 'package:warehouse_app/repository/update_rfid/update_rfid_repo_impl.dart';
 import 'package:warehouse_app/views/login_screen.dart';
-import 'package:warehouse_app/views/rfid_card_details.dart';
 import 'package:warehouse_app/views/widget/three_dot_menu_widget.dart';
 
 import '../cubit/update_rfid/update_rfid_cubit.dart';

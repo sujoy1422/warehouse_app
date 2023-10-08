@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:flutter/material.dart';
 import 'package:warehouse_app/models/login_object.dart';
 import 'package:warehouse_app/views/create_issuance.dart';
