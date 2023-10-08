@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 class RollData extends Equatable {
   final String detailId;
   final String supplierRoll;
-  final String? factoryRoll;
+  final String factoryRoll;
   final String? rollLength;
   final dynamic rfid;
   final String? rfidFlag;
@@ -11,7 +11,7 @@ class RollData extends Equatable {
   const RollData({
     required this.detailId,
     required this.supplierRoll,
-    this.factoryRoll,
+    required this.factoryRoll,
     this.rollLength,
     this.rfid,
     this.rfidFlag,
@@ -20,7 +20,7 @@ class RollData extends Equatable {
   factory RollData.fromJson(Map<String, dynamic> json) => RollData(
         detailId: json['DETAIL_ID'] as String,
         supplierRoll: json['SUPPLIER_ROLL'] as String,
-        factoryRoll: json['FACTORY_ROLL'] as String?,
+        factoryRoll: json['FACTORY_ROLL'] as String,
         rollLength: json['ROLL_LENGTH'] as String?,
         rfid: json['RFID'] as dynamic,
         rfidFlag: json['RFID_FLAG'] as dynamic,

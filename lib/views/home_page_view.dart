@@ -12,6 +12,8 @@ import 'package:warehouse_app/repository/inventory_repository/inventory_repo_imp
 import 'package:warehouse_app/repository/roll_data_repository/roll_data_repo_impl.dart';
 import 'package:warehouse_app/repository/update_rfid/update_rfid_repo_impl.dart';
 import 'package:warehouse_app/views/login_screen.dart';
+import 'package:warehouse_app/views/rfid_card_details.dart';
+import 'package:warehouse_app/views/widget/three_dot_menu_widget.dart';
 
 import '../cubit/update_rfid/update_rfid_cubit.dart';
 import 'logout_dialog.dart';
@@ -42,9 +44,17 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("RFID Attachment"),
-          actions: const <Widget>[
-            LogoutWidget(),
+          title: Text(
+              "ID: ${loginObject!.employeeNumber} || Name: ${loginObject!.employeeName}"),
+          actions: <Widget>[
+            PopUpMenu(
+                text1: 'RFID card details',
+                text2: 'Create issuance',
+                text3: 'Search roll location',
+                value1: 1,
+                value2: 2,
+                loginObject: loginObject),
+            // LogoutWidget(),
           ],
           automaticallyImplyLeading: false,
         ),
@@ -122,6 +132,7 @@ class _HomePageViewState extends State<HomePageView> {
   List<String> rollList = <String>[];
   final controller = TextEditingController();
   ValueNotifier<String> noOfPackages = ValueNotifier("");
+  int selectedSearchOption = 1;
 
   bool buttonPressed = false;
 
@@ -194,7 +205,6 @@ class _HomePageViewState extends State<HomePageView> {
                                         fontWeight: FontWeight.bold,
                                         fontSize: 20)
                                     // hintText: "country in menu mode",
-
                                     ),
                               ),
                               // onSaved: (newValue) => print("newvALUE:$newValue"),
@@ -253,6 +263,7 @@ class _HomePageViewState extends State<HomePageView> {
                                   print(
                                       "InventoryID:${state.inventory[inventoryList.indexOf(newValue!)].headerId!}");
 
+                                  selectedSearchOption = 1;
                                   headerId = state
                                       .inventory[
                                           inventoryList.indexOf(newValue)]
@@ -277,92 +288,205 @@ class _HomePageViewState extends State<HomePageView> {
                     listener: (context, state) {}),
                 Visibility(
                   visible: visible,
-                  child: Container(
-                      alignment: Alignment.topRight,
-                      padding: EdgeInsets.only(right: 10),
-                      child: ElevatedButton(
-                          onPressed: () {
-                            if (showAll == "Show All") {
-                              context
-                                  .read<RollDataCubit>()
-                                  .getRollData(headerId ?? "123", "1");
-                            } else {
-                              context
-                                  .read<RollDataCubit>()
-                                  .getRollData(headerId ?? "123", "0");
-                            }
-                            setState(() {
-                              if (showAll == "Show All") {
-                                showAll = "Hide";
-                              } else {
-                                showAll = "Show All";
-                              }
-                            });
-                          },
-                          child: Text(showAll))),
-                ),
-                BlocConsumer<RollDataCubit, RollDataState>(
-                    builder: (context, state) {
-                      if (state is RollDataLoaded) {
-                        rollData.clear();
-                        rollData = state.rolldata;
-                        rollList.clear();
-                        rollList.addAll(mapRollList(state.rolldata));
-
-                        return Container(
-                          height: height * 0.7,
-                          width: width * 0.9,
-                          child: SearchableList(
-                            searchTextController: searchedText,
-                            builder: (RollData rollData) => RollItem(
-                              loginObject: loginObject,
-                              rollData: rollData,
-                              qrData: qrData,
-                              headerId: headerId,
-                              rfid: rfid,
-                              invoiceNo: invoiceNo,
-                            ),
-                            asyncListCallback: () async {
-                              await Future.delayed(
-                                const Duration(
-                                  milliseconds: 1,
-                                ),
-                              );
-                              return rollData;
-                            },
-                            asyncListFilter: (q, list) {
-                              return list
-                                  .where((element) => element.supplierRoll
-                                      .contains(
-                                          searchedText?.value.toString() ?? q))
-                                  .toList();
-                            },
-                            // onItemSelected: (RollData item) {
-                            //   print(item);
-                            // },
-                            inputDecoration: InputDecoration(
-                              labelText: "Search Roll Id",
-                              fillColor: Colors.white,
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: Colors.blue,
-                                  width: 1.0,
-                                ),
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                            ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 50,
                           ),
-                        );
-                      } else {
-                        return Container();
-                      }
-                    },
-                    listener: (context, state) {}),
+                          Row(
+                            children: [
+                              Radio(
+                                value: 1,
+                                groupValue: selectedSearchOption,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedSearchOption = value!;
+                                  });
+                                },
+                              ),
+                              Text("Search by supplier roll"),
+                            ],
+                          ),
+                          SizedBox(
+                            width: 20,
+                          ),
+                          Row(
+                            children: [
+                              Radio(
+                                value: 2,
+                                groupValue: selectedSearchOption,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedSearchOption = value!;
+                                  });
+                                },
+                              ),
+                              Text("Search by factory roll"),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Container(
+                          alignment: Alignment.topLeft,
+                          padding: EdgeInsets.only(left: 50, bottom: 10),
+                          child: ElevatedButton(
+                              onPressed: () {
+                                if (showAll == "Show All") {
+                                  context
+                                      .read<RollDataCubit>()
+                                      .getRollData(headerId ?? "123", "1");
+                                } else {
+                                  context
+                                      .read<RollDataCubit>()
+                                      .getRollData(headerId ?? "123", "0");
+                                }
+                                setState(() {
+                                  if (showAll == "Show All") {
+                                    showAll = "Hide";
+                                  } else {
+                                    showAll = "Show All";
+                                  }
+                                });
+                              },
+                              child: Text(showAll))),
+                    ],
+                  ),
+                ),
+                Column(
+                  children: [
+                    Visibility(
+                      visible: selectedSearchOption == 1,
+                      child: searchacbleRollList(
+                        value: selectedSearchOption,
+                        height: height,
+                        width: width,
+                        loginObject: loginObject,
+                        qrData: qrData,
+                        headerId: headerId,
+                        rfid: rfid,
+                        invoiceNo: invoiceNo,
+                        rollData: rollData,
+                        text: "Search Supplier Roll",
+                      ),
+                    ),
+                    Visibility(
+                      visible: selectedSearchOption == 2,
+                      child: searchacbleRollList(
+                        value: selectedSearchOption,
+                        height: height,
+                        width: width,
+                        loginObject: loginObject,
+                        qrData: qrData,
+                        headerId: headerId,
+                        rfid: rfid,
+                        invoiceNo: invoiceNo,
+                        rollData: rollData,
+                        text: "Search Factory Roll",
+                      ),
+                    ),
+                  ],
+                )
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class searchacbleRollList extends StatelessWidget {
+  searchacbleRollList({
+    super.key,
+    required this.height,
+    required this.width,
+    required this.loginObject,
+    required this.qrData,
+    required this.headerId,
+    required this.rfid,
+    required this.invoiceNo,
+    required this.rollData,
+    required this.text,
+    required this.value,
+  });
+
+  final double height;
+  final double width;
+  final LoginObject? loginObject;
+  final String? qrData;
+  final String? headerId;
+  final String? rfid;
+  final String? invoiceNo;
+  final String text;
+  final int value;
+  List<RollData> rollData;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<RollDataCubit, RollDataState>(
+      listener: (context, state) {},
+      builder: (context, state) {
+        if (state is RollDataLoaded) {
+          rollData.clear();
+          rollData = state.rolldata;
+
+          return Container(
+            height: height * 0.7,
+            width: width * 0.9,
+            child: SearchableList(
+              searchTextController: searchedText,
+              builder: (RollData rollData) => RollItem(
+                value: value,
+                loginObject: loginObject,
+                rollData: rollData,
+                qrData: qrData,
+                headerId: headerId,
+                rfid: rfid,
+                invoiceNo: invoiceNo,
+              ),
+              asyncListCallback: () async {
+                await Future.delayed(
+                  const Duration(
+                    milliseconds: 1,
+                  ),
+                );
+                return rollData;
+              },
+              asyncListFilter: (q, list) {
+                if (value == 1) {
+                  return list
+                      .where((element) => element.supplierRoll
+                          .contains(searchedText?.value.toString() ?? q))
+                      .toList();
+                } else {
+                  return list
+                      .where((element) => element.factoryRoll
+                          .contains(searchedText?.value.toString() ?? q))
+                      .toList();
+                }
+              },
+              // onItemSelected: (RollData item) {
+              //   print(item);
+              // },
+              inputDecoration: InputDecoration(
+                labelText: text,
+                fillColor: Colors.white,
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(
+                    color: Colors.blue,
+                    width: 1.0,
+                  ),
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+            ),
+          );
+        } else {
+          return Container();
+        }
+      },
     );
   }
 }
@@ -374,12 +498,14 @@ class RollItem extends StatefulWidget {
   String? headerId;
   String? rfid;
   String? invoiceNo;
+  int value;
 
   // final index;
 
   RollItem({
     Key? key,
     required this.rollData,
+    required this.value,
     this.qrData,
     this.headerId,
     this.loginObject,
@@ -414,16 +540,20 @@ class _RollItemState extends State<RollItem> {
                   children: [
                     Text(
                       'Supplier Roll: ${widget.rollData.supplierRoll}',
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17),
+                          fontWeight:
+                              widget.value == 1 ? FontWeight.bold : null,
+                          fontSize: widget.value == 1 ? 17 : 16),
                     ),
                     Text(
                       'Factory Roll: ${widget.rollData.factoryRoll}',
-                      style: const TextStyle(color: Colors.black, fontSize: 16
-                          // fontWeight: FontWeight.bold,
-                          ),
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: widget.value == 2 ? 17 : 16,
+                        fontWeight: widget.value == 2 ? FontWeight.bold : null,
+                        // fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       'Length: ${widget.rollData.rollLength}',
@@ -456,112 +586,117 @@ class _RollItemState extends State<RollItem> {
                   padding: EdgeInsets.only(left: 4, right: 4),
                 ),
                 onPressed: () async {
-                  if (widget.rollData.rfid == null) {
-                    // Navigator.pushAndRemoveUntil(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => QrView(
-                    //         headerId: widget.headerId.toString(),
-                    //         detailId: widget.rollData.detailId,
-                    //         entryType: "1",
-                    //         loginObject: widget.loginObject,
-                    //         invoiceNo: widget.invoiceNo
-                    //         // qrData: result?.code?.toString(),
-                    //         // profileObject: state.profile,
-                    //         // loginObject: widget.loginObject,
-                    //         ),
-                    //   ),
-                    //   (Route<dynamic> route) => false,
-                    // );
-                    var res = await Navigator.push(
+                  // if (widget.rollData.rfid == null) {
+                  // Navigator.pushAndRemoveUntil(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => QrView(
+                  //         headerId: widget.headerId.toString(),
+                  //         detailId: widget.rollData.detailId,
+                  //         entryType: "1",
+                  //         loginObject: widget.loginObject,
+                  //         invoiceNo: widget.invoiceNo
+                  //         // qrData: result?.code?.toString(),
+                  //         // profileObject: state.profile,
+                  //         // loginObject: widget.loginObject,
+                  //         ),
+                  //   ),
+                  //   (Route<dynamic> route) => false,
+                  // );
+                  var res = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SimpleBarcodeScannerPage(),
+                      ));
+                  if (res != null) {
+                    print(res);
+
+                    await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              const SimpleBarcodeScannerPage(),
+                          builder: (context) => UpdatedRFID(
+                            headerId: widget.headerId ?? "",
+                            detailId: widget.rollData.detailId,
+                            result: res,
+                            entryType: "1",
+                            loginObject: widget.loginObject,
+                          ),
                         ));
-                    setState(() {
-                      if (res is String) {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => UpdatedRFID(
-                                headerId: widget.headerId ?? "",
-                                detailId: widget.rollData.detailId,
-                                result: res,
-                                entryType: "1",
-                                loginObject: widget.loginObject,
-                              ),
-                            ));
-                      }
-                    });
                   } else {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text("Scan for Code!!"),
-                          content: Text("What do you want to do? "),
-                          actions: <Widget>[
-                            ElevatedButton(
-                              child: const Text("Detach"),
-                              onPressed: () async {
-                                var res = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SimpleBarcodeScannerPage(),
-                                    ));
-                                setState(() {
-                                  if (res is String) {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => UpdatedRFID(
-                                            headerId: widget.headerId ?? "",
-                                            detailId: widget.rollData.detailId,
-                                            result: res,
-                                            entryType: "2",
-                                            rfid: widget.rollData.rfid,
-                                            loginObject: widget.loginObject,
-                                          ),
-                                        ));
-                                  }
-                                });
-                                // FocusScope.of(conte xt).unfocus();
-                              },
-                            ),
-                            ElevatedButton(
-                              child: const Text("Attach"),
-                              onPressed: () async {
-                                var res = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SimpleBarcodeScannerPage(),
-                                    ));
-                                setState(() {
-                                  if (res is String) {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => UpdatedRFID(
-                                            headerId: widget.headerId ?? "",
-                                            detailId: widget.rollData.detailId,
-                                            result: res,
-                                            entryType: "1",
-                                            loginObject: widget.loginObject,
-                                          ),
-                                        ));
-                                  }
-                                });
-                                // FocusScope.of(conte xt).unfocus();
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
+                    print("object_1 $res");
                   }
+                  // } else {
+                  //   showDialog(
+                  //     context: context,
+                  //     builder: (BuildContext context) {
+                  //       return AlertDialog(
+                  //         title: Text("Scan for Code!!"),
+                  //         content: Text("What do you want to do? "),
+                  //         actions: <Widget>[
+                  //           ElevatedButton(
+                  //             child: const Text("Detach"),
+                  //             onPressed: () async {
+                  //               var res = await Navigator.push(
+                  //                   context,
+                  //                   MaterialPageRoute(
+                  //                     builder: (context) =>
+                  //                         const SimpleBarcodeScannerPage(),
+                  //                   ));
+                  //               setState(() {
+                  //                 if (res is String) {
+                  //                   Navigator.push(
+                  //                       context,
+                  //                       MaterialPageRoute(
+                  //                         builder: (context) => UpdatedRFID(
+                  //                           headerId: widget.headerId ?? "",
+                  //                           detailId: widget.rollData.detailId,
+                  //                           result: res,
+                  //                           entryType: "2",
+                  //                           rfid: widget.rollData.rfid,
+                  //                           loginObject: widget.loginObject,
+                  //                         ),
+                  //                       ));
+                  //                 } else {
+                  //                   print("object_2 $res");
+                  //                 }
+                  //               });
+                  //               // FocusScope.of(conte xt).unfocus();
+                  //             },
+                  //           ),
+                  //           ElevatedButton(
+                  //             child: const Text("Attach"),
+                  //             onPressed: () async {
+                  //               var res = await Navigator.push(
+                  //                   context,
+                  //                   MaterialPageRoute(
+                  //                     builder: (context) =>
+                  //                         const SimpleBarcodeScannerPage(),
+                  //                   ));
+                  //               setState(() {
+                  //                 if (res is String) {
+                  //                   Navigator.push(
+                  //                       context,
+                  //                       MaterialPageRoute(
+                  //                         builder: (context) => UpdatedRFID(
+                  //                           headerId: widget.headerId ?? "",
+                  //                           detailId: widget.rollData.detailId,
+                  //                           result: res,
+                  //                           entryType: "1",
+                  //                           loginObject: widget.loginObject,
+                  //                         ),
+                  //                       ));
+                  //                 } else {
+                  //                   print("object_3 $res");
+                  //                 }
+                  //               });
+                  //               // FocusScope.of(conte xt).unfocus();
+                  //             },
+                  //           ),
+                  //         ],
+                  //       );
+                  //     },
+                  //   );
+                  // }
                   // print(rollData);
                 },
                 child: const Icon(
@@ -674,10 +809,11 @@ class _UpdatedRFIDViewState extends State<UpdatedRFIDView> {
     //             ]);
     //       });
     // } else {
+    print('object_4');
     context.read<UpdateRfidCubit>().updateRfid(
         widget.detailId,
         widget.result ?? "12345",
-        widget.loginObject?.profile?.empNo ?? "",
+        widget.loginObject?.employeeNumber ?? "",
         widget.entryType);
     // }
     super.initState();
@@ -704,12 +840,13 @@ class _UpdatedRFIDViewState extends State<UpdatedRFIDView> {
               (Route<dynamic> route) => false,
             );
           } else {
-            print(state.response);
+            print("response+${state.response}");
           }
         }
       },
       builder: (context, state) {
         if (state is UpdateRfidLoaded) {
+          print("response+${state.response}");
           return Container();
         } else {
           return loadingScreen();

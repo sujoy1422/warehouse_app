@@ -38,17 +38,18 @@ class QrView extends StatelessWidget {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-                builder: (context) => HomePage(
-                      loginObject: loginObject,
-                      headerId: headerId,
-                      invoiceNo: invoiceNo,
-                      showall: "Show All",
-                      visible: true,
-                    )),
-            (Route<dynamic> route) => false);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => HomePage(
+                    loginObject: loginObject,
+                    headerId: headerId,
+                    invoiceNo: invoiceNo,
+                    showall: "Show All",
+                    visible: true,
+                  )),
+          // (Route<dynamic> route) => false
+        );
         return Future.value(true);
       },
       child: BlocProvider(
@@ -259,13 +260,14 @@ class _QRViewExampleState extends State<QRViewExample> {
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         // cameraControll = true;
+        print(scanData);
         result = scanData;
         if (result != null) {
           // qrKey
           // context.read<LoginCubit>().getLoginData(empNo, pass, orgId, empCat)
           // context.read<ProfileCubit>().getProfileData(result?.code);
           print(
-              "DetailId:${detailId}result:${result!.code} loginObject ${loginObject?.profile?.empNo}entryType$entryType");
+              "DetailId:${detailId}result:${result!.code} loginObject ${loginObject?.employeeNumber}entryType$entryType");
           if (entryType == "2" && rfidFlag != result?.code.toString()) {
             // controller.pauseCamera();
 
@@ -276,7 +278,7 @@ class _QRViewExampleState extends State<QRViewExample> {
             context.read<UpdateRfidCubit>().updateRfid(
                 detailId,
                 result?.code.toString() ?? "",
-                loginObject?.profile?.empNo ?? "",
+                loginObject?.employeeNumber ?? "",
                 entryType);
           }
         }

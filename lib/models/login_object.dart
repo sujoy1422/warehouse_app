@@ -1,33 +1,24 @@
 import 'package:equatable/equatable.dart';
 
-import 'profile.dart';
-
 class LoginObject extends Equatable {
-  final String? auth;
-  final Profile? profile;
+	final String? auth;
+	final String? employeeNumber;
+	final String? employeeName;
 
-  const LoginObject({
-    this.auth,
-    this.profile,
-  });
+	const LoginObject({this.auth, this.employeeNumber, this.employeeName});
 
-  factory LoginObject.fromJson(Map<String, dynamic> json) => LoginObject(
-        auth: json['AUTH'] as String?,
-        profile: json['PROFILE'] == null
-            ? null
-            : Profile.fromJson(json['PROFILE'] as Map<String, dynamic>),
-      );
+	factory LoginObject.fromJson(Map<String, dynamic> json) => LoginObject(
+				auth: json['AUTH'] as String?,
+				employeeNumber: json['EMPLOYEE_NUMBER'] as String?,
+				employeeName: json['EMPLOYEE_NAME'] as String?,
+			);
 
-  Map<String, dynamic> toJson() => {
-        'AUTH': auth,
-        'PROFILE': profile?.toJson(),
-      };
+	Map<String, dynamic> toJson() => {
+				'AUTH': auth,
+				'EMPLOYEE_NUMBER': employeeNumber,
+				'EMPLOYEE_NAME': employeeName,
+			};
 
-  @override
-  List<Object?> get props {
-    return [
-      auth,
-      profile,
-    ];
-  }
+	@override
+	List<Object?> get props => [auth, employeeNumber, employeeName];
 }
