@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:warehouse_app/models/login_object.dart';
 import 'package:warehouse_app/views/create_issuance.dart';
+import 'package:warehouse_app/views/search_by_style.dart';
 import 'package:warehouse_app/views/search_roll_location.dart';
 
 import '../logout_dialog.dart';
@@ -14,6 +15,7 @@ class PopUpMenu extends StatelessWidget {
   String text3;
   int value1;
   int value2;
+
   LoginObject? loginObject;
   PopUpMenu(
       {super.key,
@@ -53,6 +55,12 @@ class PopUpMenu extends StatelessWidget {
               builder: (context) => SearchRoll(),
             ),
           );
+        } else {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SearchByStyle(),
+              ));
         }
       },
       itemBuilder: (context) => [
@@ -60,6 +68,7 @@ class PopUpMenu extends StatelessWidget {
         PopupMenuItem<int>(value: value1, child: Text(text1)),
         PopupMenuItem<int>(value: value2, child: Text(text2)),
         PopupMenuItem<int>(value: 3, child: Text(text3)),
+        PopupMenuItem<int>(value: 4, child: Text('Search By Style')),
       ],
     );
   }

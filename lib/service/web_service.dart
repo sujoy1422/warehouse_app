@@ -7,6 +7,8 @@ import 'package:warehouse_app/models/rfid_for_inspection/rfid_for_inspection.dar
 import 'package:warehouse_app/models/rfid_name.dart';
 import 'package:warehouse_app/models/roll_data.dart';
 import 'package:warehouse_app/models/roll_details.dart';
+import 'package:warehouse_app/models/style_wise_count.dart';
+import 'package:warehouse_app/models/style_wise_roll.dart';
 
 import '../models/login_object.dart';
 import '../models/rfid_status/rfid_status.dart';
@@ -54,6 +56,37 @@ class WebService {
       return inventory.map((e) => Inventory.fromJson(e)).toList();
     } else {
       throw Exception("Inventory data fetch error!");
+    }
+  }
+
+  Future<List<StyleWiseRoll>> getStyleWiseRoll(String systemId) async {
+    var formDate = FormData.fromMap({
+      'system_id': systemId,
+    });
+
+    final response = await dio.post(
+      Constants.getStylewiseRoll,
+      data: formDate,
+    );
+
+    if (response.statusCode == 200) {
+      Iterable inventory = response.data;
+      return inventory.map((e) => StyleWiseRoll.fromJson(e)).toList();
+    } else {
+      throw Exception("roll data fetch error!");
+    }
+  }
+
+  Future<List<StyleWiseCount>> getStyleWiseCount() async {
+    final response = await dio.get(
+      Constants.getStyleWiseCount,
+    );
+
+    if (response.statusCode == 200) {
+      Iterable inventory = response.data;
+      return inventory.map((e) => StyleWiseCount.fromJson(e)).toList();
+    } else {
+      throw Exception("count data fetch error!");
     }
   }
 

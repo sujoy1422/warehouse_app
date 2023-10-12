@@ -83,7 +83,6 @@ class _CreateIssuanceScreenState extends State<CreateIssuanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       padding: EdgeInsets.only(right: 10, top: 10, bottom: 10),
       child: Column(
@@ -177,13 +176,13 @@ class _CreateIssuanceScreenState extends State<CreateIssuanceScreen> {
           Spacer(),
           ElevatedButton(
               onPressed: () {
-                print(
-                    "${inspectionEntryList[0]}, ${loginObject?.employeeNumber}");
                 issuanceListLength = inspectionEntryList.length;
                 if (issuanceListLength <= 0) {
                   alertDialog(context, "Warning",
                       "Please select some roll before submit");
                 } else {
+                  print(
+                      "${inspectionEntryList[0]}, ${loginObject?.employeeNumber}");
                   context.read<InsertIssuanceListCubit>().getInspectionData(
                       inspectionEntryList[issuanceListLength - 1],
                       loginObject?.employeeNumber ?? "123456");

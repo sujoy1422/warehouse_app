@@ -26,5 +26,8 @@ class Constants {
   static const getPalletInfo = "${baseUrlWarehouse}get_pallet_info.php";
   static const insertIssueanceList =
       "${baseUrlWarehouse}insert_inssuance_list.php";
+  static const getStylewiseRoll = "${baseUrlWarehouse}get_stylewise_roll.php";
+  static const getStyleWiseCount =
+      "${baseUrlWarehouse}get_style_wise_count.php";
   // static const profileApiUrl = "${baseUrl}profile_data.php";
 }
