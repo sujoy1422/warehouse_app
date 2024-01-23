@@ -18,8 +18,8 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+          primarySwatch: Colors.blue,
+          appBarTheme: AppBarTheme(color: Color.fromARGB(255, 206, 175, 252))),
       title: "WareHouse App",
       // home: HomePage(),
       home: const LoginScreen(),

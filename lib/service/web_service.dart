@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:warehouse_app/models/inspection_list/inspection_list.dart';
 import 'package:warehouse_app/models/inventory.dart';
+import 'package:warehouse_app/models/invoice_status/invoice_status.dart';
 import 'package:warehouse_app/models/pallet_info/pallet_info.dart';
 import 'package:warehouse_app/models/response_object.dart';
 import 'package:warehouse_app/models/rfid_for_inspection/rfid_for_inspection.dart';
@@ -34,8 +35,11 @@ class WebService {
 
     if (response.statusCode == 200) {
       print("Login Object\n" + response.toString());
-
-      return LoginObject.fromJson(response.data);
+      if (response.data != null) {
+        return LoginObject?.fromJson(response.data);
+      } else {
+        throw Exception("Authentication error!");
+      }
     } else {
       throw Exception("Authentication error!");
     }
@@ -269,6 +273,22 @@ class WebService {
       return RfidForInspection.fromJson(response.data);
     } else {
       throw Exception("RFID inspection list exception!");
+    }
+  }
+
+  Future<InvoiceStatus> getInvoiceStatus(
+      String headerId) async {
+    var formDate = FormData.fromMap({'header_id': headerId});
+
+    final response = await dio.post(
+      Constants.getInvoiceStatus,
+      data: formDate,
+    );
+
+    if (response.statusCode == 200) {
+      return InvoiceStatus.fromJson(response.data);
+    } else {
+      throw Exception("Invoice Status exception!");
     }
   }
 }

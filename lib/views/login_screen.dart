@@ -51,6 +51,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           // title: state.loginObject.auth!,
                         );
                       }));
+                    } else {
+                      //if(state.loginObject.auth == "0"){
+                      alertDialog(
+                          context, "Warning!", "Incorrect user id or password");
                     }
                   }
                 },
@@ -60,22 +64,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   } else if (state is LoginLoading) {
                     return loadingScreen();
                   } else if (state is LoginSuccess) {
-                    if (state.loginObject.auth == "0") {
-                      //Show alert dialog
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        alertDialog(context, "Warning!",
-                            "Incorrect user id or password");
-                      });
-                    }
+                    // if (state.loginObject.auth == "0") {
+                    //   //Show alert dialog
+                    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+                    //     alertDialog(context, "Warning!",
+                    //         "Incorrect user id or password");
+                    //   });
+                    // }
+                    return initialLoginScreen(context);
+
+                    // } else {
+                    //   //Show alert dialog
+                    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+                    //     alertDialog(context, "Warning!",
+                    //         "Something went wrong! Please try again or contact IT.");
+                    // });
+                  } else if (state is LoginError) {
                     return initialLoginScreen(context);
                   } else {
-                    //Show alert dialog
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      alertDialog(context, "Warning!",
-                          "Something went wrong! Please try again or contact IT.");
-                    });
-
-                    return initialLoginScreen(context);
+                    return Container();
                   }
                 },
               ),
@@ -267,7 +274,7 @@ ElevatedButton buildLoginButton(
         alertDialog(context, "Warning", "Enter UserID and Password");
       } else {
         // print("UserID: ${id}Password: $pass");
-        context.read<LoginCubit>().getLoginData(id, pass, "344", "1");
+        context.read<LoginCubit>().getLoginData(id, pass, "342", "1");
       }
     },
   );

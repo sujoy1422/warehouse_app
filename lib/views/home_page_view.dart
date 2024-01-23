@@ -4,7 +4,9 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:searchable_listview/searchable_listview.dart';
+import 'package:simple_barcode_scanner/enum.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
+import 'package:torch_light/torch_light.dart';
 import 'package:warehouse_app/cubit/inventory_cubit/inventory_cubit.dart';
 import 'package:warehouse_app/cubit/roll_data_cubit/roll_data_cubit.dart';
 import 'package:warehouse_app/models/inventory.dart';
@@ -13,12 +15,12 @@ import 'package:warehouse_app/models/roll_data.dart';
 import 'package:warehouse_app/repository/inventory_repository/inventory_repo_impl.dart';
 import 'package:warehouse_app/repository/roll_data_repository/roll_data_repo_impl.dart';
 import 'package:warehouse_app/repository/update_rfid/update_rfid_repo_impl.dart';
-import 'package:warehouse_app/views/login_screen.dart';
+import 'package:warehouse_app/views/alert_dialog.dart';
+import 'package:warehouse_app/views/invoice_status_data.dart';
 import 'package:warehouse_app/views/widget/three_dot_menu_widget.dart';
 
 import '../cubit/update_rfid/update_rfid_cubit.dart';
 import 'logout_dialog.dart';
-import 'logout_widget.dart';
 
 TextEditingController? searchedText;
 
@@ -49,12 +51,13 @@ class HomePage extends StatelessWidget {
               "ID: ${loginObject!.employeeNumber} || Name: ${loginObject!.employeeName}"),
           actions: <Widget>[
             PopUpMenu(
-                text1: 'RFID card details',
-                text2: 'Create issuance',
-                text3: 'Search roll location',
-                value1: 1,
-                value2: 2,
-                loginObject: loginObject),
+              text1: 'RFID card details',
+              text2: 'Invoice status',
+              text3: 'Search roll location',
+              value1: 1,
+              value2: 2,
+              loginObject: loginObject,
+            ),
             // LogoutWidget(),
           ],
           automaticallyImplyLeading: false,
@@ -143,9 +146,9 @@ class _HomePageViewState extends State<HomePageView> {
   void initState() {
     context.read<InventoryCubit>().getInventoryData("342");
 
-    if (headerId != null) {
-      context.read<RollDataCubit>().getRollData(headerId!, "0");
-    }
+    // if (headerId != null) {
+    //   context.read<RollDataCubit>().getRollData(headerId!, "0");
+    // }
     super.initState();
   }
 
@@ -181,112 +184,140 @@ class _HomePageViewState extends State<HomePageView> {
             alignment: Alignment.center,
             child: Column(
               children: [
-                BlocConsumer<InventoryCubit, InventoryState>(
-                    builder: (context, state) {
-                      if (state is InventoryInitial) {
-                        return Container(
-                          width: width * 0.8,
-                          margin: EdgeInsets.only(top: 20, bottom: 20),
-                          child: DropdownSearch<String>(
-                              popupProps: const PopupProps.menu(
-                                showSelectedItems: true,
-                                // disabledItemFn: (String s) => s.startsWith('I'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    BlocConsumer<InventoryCubit, InventoryState>(
+                        builder: (context, state) {
+                          if (state is InventoryInitial) {
+                            return Container(
+                              width: width * 0.55,
+                              margin: EdgeInsets.only(top: 20, bottom: 20),
+                              child: DropdownSearch<String>(
+                                  popupProps: const PopupProps.menu(
+                                    showSelectedItems: true,
+                                    // disabledItemFn: (String s) => s.startsWith('I'),
 
-                                showSearchBox: true,
-                              ),
-                              selectedItem: invoiceNo ?? "",
-                              // clearButtonProps: ClearButtonProps(isVisible: true),
+                                    showSearchBox: true,
+                                  ),
+                                  selectedItem: invoiceNo ?? "",
+                                  // clearButtonProps: ClearButtonProps(isVisible: true),
 
-                              items: inventoryList,
-                              dropdownDecoratorProps:
-                                  const DropDownDecoratorProps(
-                                dropdownSearchDecoration: InputDecoration(
-                                    labelText: "Select Inventory Data",
-                                    labelStyle: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20)
-                                    // hintText: "country in menu mode",
-                                    ),
-                              ),
-                              // onSaved: (newValue) => print("newvALUE:$newValue"),
+                                  items: inventoryList,
+                                  dropdownDecoratorProps:
+                                      const DropDownDecoratorProps(
+                                    dropdownSearchDecoration: InputDecoration(
+                                        labelText: "Select Inventory Data",
+                                        labelStyle: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20)
+                                        // hintText: "country in menu mode",
+                                        ),
+                                  ),
+                                  // onSaved: (newValue) => print("newvALUE:$newValue"),
 
-                              // onSaved: jobList.value[0],
+                                  // onSaved: jobList.value[0],
 
-                              onChanged: (String? newValue) {}),
-                        );
-                      } else if (state is InventoryLoading) {
-                        return Container();
-                      } else if (state is InventoryLoaded) {
-                        print("here");
+                                  onChanged: (String? newValue) {}),
+                            );
+                          } else if (state is InventoryLoading) {
+                            return Container();
+                          } else if (state is InventoryLoaded) {
+                            print("here");
 
-                        // if(state.inventory)
-                        inventoryList.clear();
-                        // jobList.value.add("Select a Job");
-                        inventoryList.addAll(mapInventoryData(state.inventory));
-                        inventory = state.inventory;
-                        _selectedItem = "";
-                        // print("JobList:" + jobList.toString());
-                        // dropDown(width);
-                        return Container(
-                          width: width * 0.8,
-                          margin: EdgeInsets.only(top: 20, bottom: 20),
-                          child: DropdownSearch<String>(
-                              popupProps: const PopupProps.menu(
-                                showSelectedItems: true,
+                            // if(state.inventory)
+                            inventoryList.clear();
+                            // jobList.value.add("Select a Job");
+                            inventoryList
+                                .addAll(mapInventoryData(state.inventory));
+                            inventory = state.inventory;
+                            _selectedItem = "";
+                            // print("JobList:" + jobList.toString());
+                            // dropDown(width);
+                            return Container(
+                              width: width * 0.55,
+                              margin: EdgeInsets.only(top: 20, bottom: 20),
+                              child: DropdownSearch<String>(
+                                  popupProps: const PopupProps.menu(
+                                    showSelectedItems: true,
 
-                                // disabledItemFn: (String s) => s.startsWith('I'),
+                                    // disabledItemFn: (String s) => s.startsWith('I'),
 
-                                showSearchBox: true,
-                              ),
-                              selectedItem: invoiceNo ?? _selectedItem,
+                                    showSearchBox: true,
+                                  ),
+                                  selectedItem: invoiceNo ?? _selectedItem,
 
-                              // clearButtonProps: ClearButtonProps(isVisible: true),
-                              items: inventoryList,
-                              dropdownDecoratorProps:
-                                  const DropDownDecoratorProps(
-                                dropdownSearchDecoration: InputDecoration(
-                                    labelText: "Select Inventory Data",
-                                    labelStyle: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20)
-                                    // hintText: "country in menu mode",
-                                    ),
-                              ),
-                              // onSaved: (newValue) => print("newvALUE:$newValue"),
+                                  // clearButtonProps: ClearButtonProps(isVisible: true),
+                                  items: inventoryList,
+                                  dropdownDecoratorProps:
+                                      const DropDownDecoratorProps(
+                                    dropdownSearchDecoration: InputDecoration(
+                                        labelText: "Select Inventory Data",
+                                        labelStyle: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20)
+                                        // hintText: "country in menu mode",
+                                        ),
+                                  ),
+                                  // onSaved: (newValue) => print("newvALUE:$newValue"),
 
-                              // onSaved: jobList.value[0],
+                                  // onSaved: jobList.value[0],
 
-                              onChanged: (String? newValue) {
-                                // context.read<JobCubit>().getJobData();
-                                // selectedItem.value = newValue ?? "0";
-                                // selectedItem.value;
-                                setState(() {
-                                  print(
-                                      "InventoryID:${state.inventory[inventoryList.indexOf(newValue!)].headerId!}");
+                                  onChanged: (String? newValue) {
+                                    // context.read<JobCubit>().getJobData();
+                                    // selectedItem.value = newValue ?? "0";
+                                    // selectedItem.value;
+                                    setState(() {
+                                      print(
+                                          "InventoryID:${state.inventory[inventoryList.indexOf(newValue!)].headerId!}");
 
-                                  selectedSearchOption = 1;
-                                  headerId = state
-                                      .inventory[
-                                          inventoryList.indexOf(newValue)]
-                                      .headerId!;
-                                  invoiceNo = newValue;
-                                  context.read<RollDataCubit>().getRollData(
-                                      state
+                                      selectedSearchOption = 1;
+                                      headerId = state
                                           .inventory[
                                               inventoryList.indexOf(newValue)]
-                                          .headerId!,
-                                      "0");
+                                          .headerId!;
+                                      invoiceNo = newValue;
+                                      context.read<RollDataCubit>().getRollData(
+                                          state
+                                              .inventory[inventoryList
+                                                  .indexOf(newValue)]
+                                              .headerId!,
+                                          "0");
 
-                                  visible = true;
-                                });
-                                //newValue = "";
-                              }),
-                        );
-                      } else {
-                        return Container();
-                      }
-                    },
-                    listener: (context, state) {}),
+                                      visible = true;
+                                    });
+                                    //newValue = "";
+                                  }),
+                            );
+                          } else {
+                            return Container();
+                          }
+                        },
+                        listener: (context, state) {}),
+                    Visibility(
+                      visible: headerId != null ? true : false,
+                      child: ElevatedButton(
+                          onPressed: () {
+                            if (headerId != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => InvoiceStatusData(
+                                    headerId: headerId,
+                                    loginObject: loginObject,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              alertDialog(context, "Warning",
+                                  "Please Select the invoice number first!");
+                            }
+                          },
+                          child: Text("Check Status")),
+                    )
+                  ],
+                ),
                 Visibility(
                   visible: visible,
                   child: Column(
@@ -294,7 +325,7 @@ class _HomePageViewState extends State<HomePageView> {
                       Row(
                         children: [
                           SizedBox(
-                            width: 50,
+                            width: MediaQuery.of(context).size.width * 0.01,
                           ),
                           Row(
                             children: [
@@ -331,7 +362,7 @@ class _HomePageViewState extends State<HomePageView> {
                       ),
                       Container(
                           alignment: Alignment.topLeft,
-                          padding: EdgeInsets.only(left: 50, bottom: 10),
+                          padding: EdgeInsets.only(left: 20, bottom: 10),
                           child: ElevatedButton(
                               onPressed: () {
                                 if (showAll == "Show All") {
@@ -432,20 +463,24 @@ class searchacbleRollList extends StatelessWidget {
         if (state is RollDataLoaded) {
           rollData.clear();
           rollData = state.rolldata;
+          print(rollData);
 
           return Container(
             height: height * 0.7,
             width: width * 0.9,
             child: SearchableList(
               searchTextController: searchedText,
-              builder: (RollData rollData) => RollItem(
-                value: value,
-                loginObject: loginObject,
-                rollData: rollData,
-                qrData: qrData,
-                headerId: headerId,
-                rfid: rfid,
-                invoiceNo: invoiceNo,
+              builder: (RollData rollData) => BlocProvider(
+                create: (context) => UpdateRfidCubit(UpdateDataRepoImpl()),
+                child: RollItem(
+                  value: value,
+                  loginObject: loginObject,
+                  rollData: rollData,
+                  qrData: qrData,
+                  headerId: headerId,
+                  rfid: rfid,
+                  invoiceNo: invoiceNo,
+                ),
               ),
               asyncListCallback: () async {
                 await Future.delayed(
@@ -526,7 +561,6 @@ class _RollItemState extends State<RollItem> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
-        padding: EdgeInsets.only(bottom: 5, top: 5, left: 10),
         decoration: BoxDecoration(
           color: Colors.grey[200],
           borderRadius: BorderRadius.circular(10),
@@ -537,7 +571,7 @@ class _RollItemState extends State<RollItem> {
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
                       'Supplier Roll: ${widget.rollData.supplierRoll}',
@@ -560,6 +594,14 @@ class _RollItemState extends State<RollItem> {
                       'Length: ${widget.rollData.rollLength}',
                       style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
+                    Text(
+                      'Shade: ${widget.rollData.shade}',
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
+                    ),
+                    Text(
+                      'Shrink Length: ${widget.rollData.shrinkLength}',
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
+                    ),
                     Row(
                       children: [
                         const Text('RFID Tag: ',
@@ -580,6 +622,19 @@ class _RollItemState extends State<RollItem> {
                 ),
               ],
             ),
+            BlocConsumer<UpdateRfidCubit, UpdateRfidState>(
+              listener: (context, state) {},
+              builder: (context, state) {
+                if (state is UpdateRfidLoaded) {
+                  if (state.response != "Data update unsuccessful!") {
+                    context
+                        .read<RollDataCubit>()
+                        .getRollData(widget.headerId ?? "", "0");
+                  }
+                }
+                return Container();
+              },
+            ),
             const Spacer(),
             ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -587,118 +642,43 @@ class _RollItemState extends State<RollItem> {
                   padding: EdgeInsets.only(left: 4, right: 4),
                 ),
                 onPressed: () async {
-                  // if (widget.rollData.rfid == null) {
-                  // Navigator.pushAndRemoveUntil(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (context) => QrView(
-                  //         headerId: widget.headerId.toString(),
-                  //         detailId: widget.rollData.detailId,
-                  //         entryType: "1",
-                  //         loginObject: widget.loginObject,
-                  //         invoiceNo: widget.invoiceNo
-                  //         // qrData: result?.code?.toString(),
-                  //         // profileObject: state.profile,
-                  //         // loginObject: widget.loginObject,
-                  //         ),
-                  //   ),
-                  //   (Route<dynamic> route) => false,
-                  // );
+                  // QrBarCodeScannerDialog().getScannedQrBarCode(
+                  //     context: context,
+                  //     onCode: (code) {
+                  //       setState(() {
+                  //         result = code;
+                  //         debugPrint("$result");
+                  //         context.read<UpdateRfidCubit>().updateRfid(
+                  //             widget.rollData.detailId,
+                  //             result ?? "12345",
+                  //             widget.loginObject?.employeeNumber ?? "",
+                  //             "1");
+
+                  //         // context.read<UpdateRfidCubit>().updateRfid(detailsId, rfid, entryBy, entryType)
+                  //       });
+                  //     });
+                  // _turnOnFlash(context);
                   var res = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SimpleBarcodeScannerPage(),
+                        builder: (context) => SimpleBarcodeScannerPage(
+                          isShowFlashIcon: true,
+                          scanType: ScanType.barcode,
+                          appBarTitle:
+                              "Scan for roll no: ${widget.rollData.factoryRoll}",
+                        ),
                       ));
-                  if (res != null) {
-                    print(res);
-
-                    await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => UpdatedRFID(
-                            headerId: widget.headerId ?? "",
-                            detailId: widget.rollData.detailId,
-                            result: res,
-                            entryType: "1",
-                            loginObject: widget.loginObject,
-                          ),
-                        ));
-                  } else {
-                    print("object_1 $res");
-                  }
-                  // } else {
-                  //   showDialog(
-                  //     context: context,
-                  //     builder: (BuildContext context) {
-                  //       return AlertDialog(
-                  //         title: Text("Scan for Code!!"),
-                  //         content: Text("What do you want to do? "),
-                  //         actions: <Widget>[
-                  //           ElevatedButton(
-                  //             child: const Text("Detach"),
-                  //             onPressed: () async {
-                  //               var res = await Navigator.push(
-                  //                   context,
-                  //                   MaterialPageRoute(
-                  //                     builder: (context) =>
-                  //                         const SimpleBarcodeScannerPage(),
-                  //                   ));
-                  //               setState(() {
-                  //                 if (res is String) {
-                  //                   Navigator.push(
-                  //                       context,
-                  //                       MaterialPageRoute(
-                  //                         builder: (context) => UpdatedRFID(
-                  //                           headerId: widget.headerId ?? "",
-                  //                           detailId: widget.rollData.detailId,
-                  //                           result: res,
-                  //                           entryType: "2",
-                  //                           rfid: widget.rollData.rfid,
-                  //                           loginObject: widget.loginObject,
-                  //                         ),
-                  //                       ));
-                  //                 } else {
-                  //                   print("object_2 $res");
-                  //                 }
-                  //               });
-                  //               // FocusScope.of(conte xt).unfocus();
-                  //             },
-                  //           ),
-                  //           ElevatedButton(
-                  //             child: const Text("Attach"),
-                  //             onPressed: () async {
-                  //               var res = await Navigator.push(
-                  //                   context,
-                  //                   MaterialPageRoute(
-                  //                     builder: (context) =>
-                  //                         const SimpleBarcodeScannerPage(),
-                  //                   ));
-                  //               setState(() {
-                  //                 if (res is String) {
-                  //                   Navigator.push(
-                  //                       context,
-                  //                       MaterialPageRoute(
-                  //                         builder: (context) => UpdatedRFID(
-                  //                           headerId: widget.headerId ?? "",
-                  //                           detailId: widget.rollData.detailId,
-                  //                           result: res,
-                  //                           entryType: "1",
-                  //                           loginObject: widget.loginObject,
-                  //                         ),
-                  //                       ));
-                  //                 } else {
-                  //                   print("object_3 $res");
-                  //                 }
-                  //               });
-                  //               // FocusScope.of(conte xt).unfocus();
-                  //             },
-                  //           ),
-                  //         ],
-                  //       );
-                  //     },
-                  //   );
-                  // }
-                  // print(rollData);
+                  setState(() {
+                    if (res is String && res != '-1') {
+                      result = res;
+                      debugPrint("res_ba_c: $result");
+                      context.read<UpdateRfidCubit>().updateRfid(
+                          widget.rollData.detailId,
+                          result ?? "12345",
+                          widget.loginObject?.employeeNumber ?? "",
+                          "1");
+                    }
+                  });
                 },
                 child: const Icon(
                   Icons.qr_code_2,
@@ -711,6 +691,26 @@ class _RollItemState extends State<RollItem> {
   }
 }
 
+Future<void> _turnOnFlash(BuildContext context) async {
+  try {
+    await TorchLight.enableTorch();
+  } on Exception catch (_) {
+    _showErrorMes('Could not enable Flashlight', context);
+  }
+}
+
+Future<void> _turnOffFlash(BuildContext context) async {
+  try {
+    await TorchLight.disableTorch();
+  } on Exception catch (_) {
+    _showErrorMes('Could not enable Flashlight', context);
+  }
+}
+
+void _showErrorMes(String mes, BuildContext context) {
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mes)));
+}
+
 List<String> mapInventoryData(List<Inventory> elementList) {
   // return Map.fromIterable(elementList, key: (element) => ,)
   return elementList.map((e) => e.invoiceNo.toString()).toList();
@@ -721,138 +721,138 @@ List<String> mapRollList(List<RollData> elementList) {
   return elementList.map((e) => e.detailId.toString()).toList();
 }
 
-class UpdatedRFID extends StatelessWidget {
-  LoginObject? loginObject;
-  String headerId;
-  String detailId;
-  String entryType;
-  String? rfid;
-  String? rfidFlag;
-  String? invoiceNo;
-  String? result;
-  UpdatedRFID(
-      {super.key,
-      required this.headerId,
-      required this.detailId,
-      required this.entryType,
-      this.loginObject,
-      this.rfid,
-      this.rfidFlag,
-      this.invoiceNo,
-      this.result});
+// class UpdatedRFID extends StatelessWidget {
+//   LoginObject? loginObject;
+//   String headerId;
+//   String detailId;
+//   String entryType;
+//   String? rfid;
+//   String? rfidFlag;
+//   String? invoiceNo;
+//   String? result;
+//   UpdatedRFID(
+//       {super.key,
+//       required this.headerId,
+//       required this.detailId,
+//       required this.entryType,
+//       this.loginObject,
+//       this.rfid,
+//       this.rfidFlag,
+//       this.invoiceNo,
+//       this.result});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Warehouse App"),
-        actions: const <Widget>[
-          LogoutWidget(),
-        ],
-        automaticallyImplyLeading: false,
-      ),
-      body: BlocProvider(
-        create: (context) => UpdateRfidCubit(UpdateDataRepoImpl()),
-        child: UpdatedRFIDView(
-            headerId: this.headerId,
-            detailId: this.detailId,
-            entryType: this.entryType,
-            loginObject: this.loginObject,
-            rfid: this.rfid,
-            rfidFlag: this.rfidFlag,
-            invoiceNo: this.invoiceNo,
-            result: this.result),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text("Warehouse App"),
+//         actions: const <Widget>[
+//           LogoutWidget(),
+//         ],
+//         automaticallyImplyLeading: false,
+//       ),
+//       body: BlocProvider(
+//         create: (context) => UpdateRfidCubit(UpdateDataRepoImpl()),
+//         child: UpdatedRFIDView(
+//             headerId: this.headerId,
+//             detailId: this.detailId,
+//             entryType: this.entryType,
+//             loginObject: this.loginObject,
+//             rfid: this.rfid,
+//             rfidFlag: this.rfidFlag,
+//             invoiceNo: this.invoiceNo,
+//             result: this.result),
+//       ),
+//     );
+//   }
+// }
 
-class UpdatedRFIDView extends StatefulWidget {
-  LoginObject? loginObject;
-  String headerId;
-  String detailId;
-  String entryType;
-  String? rfid;
-  String? rfidFlag;
-  String? invoiceNo;
-  bool? cameraControll;
-  String? result;
-  UpdatedRFIDView({
-    super.key,
-    required this.headerId,
-    required this.detailId,
-    required this.entryType,
-    this.loginObject,
-    this.rfid,
-    this.rfidFlag,
-    this.invoiceNo,
-    this.cameraControll,
-    this.result,
-  });
+// class UpdatedRFIDView extends StatefulWidget {
+//   LoginObject? loginObject;
+//   String headerId;
+//   String detailId;
+//   String entryType;
+//   String? rfid;
+//   String? rfidFlag;
+//   String? invoiceNo;
+//   bool? cameraControll;
+//   String? result;
+//   UpdatedRFIDView({
+//     super.key,
+//     required this.headerId,
+//     required this.detailId,
+//     required this.entryType,
+//     this.loginObject,
+//     this.rfid,
+//     this.rfidFlag,
+//     this.invoiceNo,
+//     this.cameraControll,
+//     this.result,
+//   });
 
-  @override
-  State<UpdatedRFIDView> createState() => _UpdatedRFIDViewState();
-}
+//   @override
+//   State<UpdatedRFIDView> createState() => _UpdatedRFIDViewState();
+// }
 
-class _UpdatedRFIDViewState extends State<UpdatedRFIDView> {
-  @override
-  void initState() {
-    // print("${widget.detailId},${widget.result},${widget.loginObject?.profile?.empNo},${}")
-    // if (widget.entryType == "2" && widget.rfid != widget.result) {
-    //   showDialog(
-    //       context: context,
-    //       builder: (BuildContext context) {
-    //         return AlertDialog(
-    //             title: Text("Warning!!"),
-    //             content: Text("detached RFID no. is not the same"),
-    //             actions: <Widget>[
-    //               ElevatedButton(onPressed: () {}, child: Text("Detach Again"))
-    //             ]);
-    //       });
-    // } else {
-    print('object_4');
-    context.read<UpdateRfidCubit>().updateRfid(
-        widget.detailId,
-        widget.result ?? "12345",
-        widget.loginObject?.employeeNumber ?? "",
-        widget.entryType);
-    // }
-    super.initState();
-  }
+// class _UpdatedRFIDViewState extends State<UpdatedRFIDView> {
+//   @override
+//   void initState() {
+//     // print("${widget.detailId},${widget.result},${widget.loginObject?.profile?.empNo},${}")
+//     // if (widget.entryType == "2" && widget.rfid != widget.result) {
+//     //   showDialog(
+//     //       context: context,
+//     //       builder: (BuildContext context) {
+//     //         return AlertDialog(
+//     //             title: Text("Warning!!"),
+//     //             content: Text("detached RFID no. is not the same"),
+//     //             actions: <Widget>[
+//     //               ElevatedButton(onPressed: () {}, child: Text("Detach Again"))
+//     //             ]);
+//     //       });
+//     // } else {
+//     print('object_4');
+//     context.read<UpdateRfidCubit>().updateRfid(
+//         widget.detailId,
+//         widget.result ?? "12345",
+//         widget.loginObject?.employeeNumber ?? "",
+//         widget.entryType);
+//     // }
+//     super.initState();
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<UpdateRfidCubit, UpdateRfidState>(
-      listener: (context, state) {
-        if (state is UpdateRfidLoaded) {
-          if (state.response != "Data update unsuccessful!") {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => HomePage(
-                  qrData: widget.result?.toString(),
-                  headerId: widget.headerId,
-                  loginObject: widget.loginObject,
-                  invoiceNo: widget.invoiceNo,
-                  showall: "Show All",
-                  visible: true,
-                ),
-              ),
-              (Route<dynamic> route) => false,
-            );
-          } else {
-            print("response+${state.response}");
-          }
-        }
-      },
-      builder: (context, state) {
-        if (state is UpdateRfidLoaded) {
-          print("response+${state.response}");
-          return Container();
-        } else {
-          return loadingScreen();
-        }
-      },
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocConsumer<UpdateRfidCubit, UpdateRfidState>(
+//       listener: (context, state) {
+//         if (state is UpdateRfidLoaded) {
+//           if (state.response != "Data update unsuccessful!") {
+//             Navigator.pushAndRemoveUntil(
+//               context,
+//               MaterialPageRoute(
+//                 builder: (context) => HomePage(
+//                   qrData: widget.result?.toString(),
+//                   headerId: widget.headerId,
+//                   loginObject: widget.loginObject,
+//                   invoiceNo: widget.invoiceNo,
+//                   showall: "Show All",
+//                   visible: true,
+//                 ),
+//               ),
+//               (Route<dynamic> route) => false,
+//             );
+//           } else {
+//             print("response+${state.response}");
+//           }
+//         }
+//       },
+//       builder: (context, state) {
+//         if (state is UpdateRfidLoaded) {
+//           print("response+${state.response}");
+//           return Container();
+//         } else {
+//           return loadingScreen();
+//         }
+//       },
+//     );
+//   }
+// }

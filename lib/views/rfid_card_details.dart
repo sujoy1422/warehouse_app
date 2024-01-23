@@ -65,28 +65,39 @@ class _RfidCardDetailsScreenState extends State<RfidCardDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            child: ElevatedButton(
-                onPressed: () async {
-                  var res = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SimpleBarcodeScannerPage(),
-                      ));
-                  setState(() {
-                    result = res;
-                    print(result);
-                    // context.read<RfidStatusCubit>().getStatusData(result);
-                    context
-                        .read<RfidNameCubit>()
-                        .getNameData(result.toString());
-                  });
-                },
-                child: Text("Scan RFID to see details")),
+            child: Row(
+              children: [
+                ElevatedButton(
+                    onPressed: () async {
+                      var res = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const SimpleBarcodeScannerPage(),
+                          ));
+                      setState(() {
+                        result = res;
+                        print(result);
+                        // context.read<RfidStatusCubit>().getStatusData(result);
+                        context
+                            .read<RfidNameCubit>()
+                            .getNameData(result.toString());
+                      });
+                    },
+                    child: Text("Scan RFID to see details")),
+                Container(
+                    margin: EdgeInsets.only(left: 10),
+                    child: Text(
+                      "RFID card No: $result ",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ))
+              ],
+            ),
           ),
 
           BlocConsumer<RfidNameCubit, RfidNameState>(
-            listener: (context, state) {},
-            builder: (context, state) {
+            listener: (context, state) {
               if (state is RfidNameLoaded) {
                 print("rfid_name $state");
                 if (state.rfidName.rfidName == "PALLET") {
@@ -94,7 +105,21 @@ class _RfidCardDetailsScreenState extends State<RfidCardDetailsScreen> {
                   context
                       .read<PalletInfoCubit>()
                       .getPalletInfo(state.rfidName.rfid);
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          RolLDetails(rfid: state.rfidName.rfid),
+                    ),
+                  );
                 }
+              }
+            },
+            builder: (context, state) {
+              if (state is RfidNameLoaded) {
+                print("rfid_name $state");
+
                 return Container();
               } else if (state is RfidNameError) {
                 return Container();
@@ -116,19 +141,16 @@ class _RfidCardDetailsScreenState extends State<RfidCardDetailsScreen> {
                               MediaQuery.of(context).size.width * 0.12,
                           columns: [
                             DataColumn(
-                              label: Text('Rack No'),
+                              label: Expanded(child: Text('Bin')),
                             ),
                             DataColumn(
-                              label: Text('Bin'),
+                              label: Expanded(child: Text('Roll No.')),
                             ),
                             DataColumn(
-                              label: Text('Roll No.'),
+                              label: Expanded(child: Text('Factory Roll')),
                             ),
                             DataColumn(
-                              label: Text('Factory Roll'),
-                            ),
-                            DataColumn(
-                              label: Text('Roll Length'),
+                              label: Expanded(child: Text('Roll Length')),
                             ),
                           ],
                           rows: [
@@ -144,8 +166,7 @@ class _RfidCardDetailsScreenState extends State<RfidCardDetailsScreen> {
                                     );
                                   },
                                   cells: [
-                                    DataCell(Text("${i.rackNo}")),
-                                    DataCell(Text("${i.binSlNo} (${i.bin})")),
+                                    DataCell(Text("${i.bin}")),
                                     DataCell(Text("${i.rollNo}")),
                                     DataCell(Text("${i.factoryRoll}")),
                                     DataCell(Text("${i.rollLength}")),
@@ -159,22 +180,19 @@ class _RfidCardDetailsScreenState extends State<RfidCardDetailsScreen> {
                           ]),
                       Container(
                         padding: EdgeInsets.only(
-                            left: MediaQuery.of(context).size.width * 0.27,
+                            // left: MediaQuery.of(context).size.width * 0.27,
                             top: 20),
                         child: Row(
                           children: [
                             Container(
                               alignment: Alignment.centerRight,
-                              padding: EdgeInsets.only(
-                                  left:
-                                      MediaQuery.of(context).size.width * 0.078,
-                                  top: 20),
+                              padding: EdgeInsets.only(top: 20),
                               child: Text(
-                                "Number of Rolls:  ${state.palletInfo.total?.totalRoll}",
+                                "Number of Rolls:  ${state.palletInfo.rollList.length}",
                                 style: TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 21),
+                                    fontSize: 15),
                               ),
                             ),
                             Container(
@@ -187,7 +205,7 @@ class _RfidCardDetailsScreenState extends State<RfidCardDetailsScreen> {
                                 style: TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 21),
+                                    fontSize: 15),
                               ),
                             ),
                           ],

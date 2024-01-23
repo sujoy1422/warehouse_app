@@ -7,6 +7,8 @@ class RollData extends Equatable {
   final String? rollLength;
   final dynamic rfid;
   final String? rfidFlag;
+  final String? shade;
+  final String? shrinkLength;
 
   const RollData({
     required this.detailId,
@@ -15,6 +17,8 @@ class RollData extends Equatable {
     this.rollLength,
     this.rfid,
     this.rfidFlag,
+     this.shade,
+     this.shrinkLength,
   });
 
   factory RollData.fromJson(Map<String, dynamic> json) => RollData(
@@ -24,6 +28,8 @@ class RollData extends Equatable {
         rollLength: json['ROLL_LENGTH'] as String?,
         rfid: json['RFID'] as dynamic,
         rfidFlag: json['RFID_FLAG'] as dynamic,
+        shade: json['SHADE'] as String?,
+        shrinkLength: json['SHRINK_LENGTH'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -33,6 +39,8 @@ class RollData extends Equatable {
         'ROLL_LENGTH': rollLength,
         'RFID': rfid,
         'RFID_FLAG': rfidFlag,
+        'SHADE': shade,
+        'SHRINK_LENGTH': shrinkLength,
       };
 
   @override
@@ -44,6 +52,8 @@ class RollData extends Equatable {
       rollLength,
       rfid,
       rfidFlag,
+      shade,
+      shrinkLength
     ];
   }
 }
