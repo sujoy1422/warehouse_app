@@ -1,6 +1,6 @@
 class Constants {
   static const appTitle = "Warehouse";
-  static const appVersion = "App Version 1.6.0";
+  static const appVersion = "App Version 1.6.1";
 
 // //Api Url
 //   static const baseUrl =

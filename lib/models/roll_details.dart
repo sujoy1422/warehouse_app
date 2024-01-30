@@ -5,6 +5,7 @@ class RollDetails extends Equatable {
 	final String? supplierRoll;
 	final String? rollLength;
 	final String? rfid;
+	final String? invoiceNo;
 	final String? buyer;
 	final String? style;
 	final String? season;
@@ -31,6 +32,7 @@ class RollDetails extends Equatable {
 		this.shrinks, 
 		this.totalLength, 
 		this.remainningLength, 
+    this.invoiceNo,
 	});
 
 	factory RollDetails.fromJson(Map<String, dynamic> json) => RollDetails(
@@ -48,6 +50,7 @@ class RollDetails extends Equatable {
 				shrinks: json['SHRINKS'] as String?,
 				totalLength: json['TOTAL_LENGTH'] as String?,
 				remainningLength: json['REMAINNING_LENGTH'] as String?,
+				invoiceNo: json['INVOICE_NO'] as String?,
 			);
 
 	Map<String, dynamic> toJson() => {
@@ -65,6 +68,7 @@ class RollDetails extends Equatable {
 				'SHRINKS': shrinks,
 				'TOTAL_LENGTH': totalLength,
 				'REMAINNING_LENGTH': remainningLength,
+        'INVOICE_NO' : invoiceNo
 			};
 
 	@override
@@ -84,6 +88,7 @@ class RollDetails extends Equatable {
 				shrinks,
 				totalLength,
 				remainningLength,
+        invoiceNo
 		];
 	}
 }

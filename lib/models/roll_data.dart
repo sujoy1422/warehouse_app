@@ -9,6 +9,7 @@ class RollData extends Equatable {
   final String? rfidFlag;
   final String? shade;
   final String? shrinkLength;
+  final String? shrinkPattern;
 
   const RollData({
     required this.detailId,
@@ -17,20 +18,21 @@ class RollData extends Equatable {
     this.rollLength,
     this.rfid,
     this.rfidFlag,
-     this.shade,
-     this.shrinkLength,
+    this.shade,
+    this.shrinkLength,
+    this.shrinkPattern,
   });
 
   factory RollData.fromJson(Map<String, dynamic> json) => RollData(
-        detailId: json['DETAIL_ID'] as String,
-        supplierRoll: json['SUPPLIER_ROLL'] as String,
-        factoryRoll: json['FACTORY_ROLL'] as String,
-        rollLength: json['ROLL_LENGTH'] as String?,
-        rfid: json['RFID'] as dynamic,
-        rfidFlag: json['RFID_FLAG'] as dynamic,
-        shade: json['SHADE'] as String?,
-        shrinkLength: json['SHRINK_LENGTH'] as String?,
-      );
+      detailId: json['DETAIL_ID'] as String,
+      supplierRoll: json['SUPPLIER_ROLL'] as String,
+      factoryRoll: json['FACTORY_ROLL'] as String,
+      rollLength: json['ROLL_LENGTH'] as String?,
+      rfid: json['RFID'] as dynamic,
+      rfidFlag: json['RFID_FLAG'] as dynamic,
+      shade: json['SHADE'] as String?,
+      shrinkLength: json['SHRINK_LENGTH'] as String?,
+      shrinkPattern: json['SHRINK_PATTERN'] as String?);
 
   Map<String, dynamic> toJson() => {
         'DETAIL_ID': detailId,
@@ -41,6 +43,7 @@ class RollData extends Equatable {
         'RFID_FLAG': rfidFlag,
         'SHADE': shade,
         'SHRINK_LENGTH': shrinkLength,
+        'SHRINK_PATTERN': shrinkPattern,
       };
 
   @override
@@ -53,7 +56,8 @@ class RollData extends Equatable {
       rfid,
       rfidFlag,
       shade,
-      shrinkLength
+      shrinkLength,
+      shrinkPattern
     ];
   }
 }

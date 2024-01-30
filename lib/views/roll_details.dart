@@ -56,10 +56,16 @@ class _RollDetailsScreenState extends State<RollDetailsScreen> {
                   children: [
                     rollDetailsTextWidget(
                         "Roll No. : ", state.rollDetails[0].rfid.toString()),
+                    rollDetailsTextWidget("Invoice No. : ",
+                        state.rollDetails[0].invoiceNo.toString()),
                     rollDetailsTextWidget("Factory Roll : ",
                         state.rollDetails[0].factoryRoll.toString()),
                     rollDetailsTextWidget("Supplier Roll : ",
                         state.rollDetails[0].supplierRoll.toString()),
+                    rollDetailsTextWidget(
+                        "Shade : ", state.rollDetails[0].shade.toString()),
+                    rollDetailsTextWidget("Shrink Pattern : ",
+                        state.rollDetails[0].shrinkPattern.toString()),
                     rollDetailsTextWidget(
                         "Buyer : ", state.rollDetails[0].buyer.toString()),
                     rollDetailsTextWidget(
@@ -71,11 +77,7 @@ class _RollDetailsScreenState extends State<RollDetailsScreen> {
                     rollDetailsTextWidget(
                         "Wash : ", state.rollDetails[0].wash.toString()),
                     rollDetailsTextWidget(
-                        "Shade : ", state.rollDetails[0].shade.toString()),
-                    rollDetailsTextWidget(
                         "Srinkage : ", state.rollDetails[0].shrinks.toString()),
-                    rollDetailsTextWidget("Shrink Pattern : ",
-                        state.rollDetails[0].shrinkPattern.toString()),
                     rollDetailsTextWidget("Total Length : ",
                         state.rollDetails[0].totalLength.toString()),
                     rollDetailsTextWidget("Remaining Length : ",

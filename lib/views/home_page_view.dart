@@ -599,6 +599,10 @@ class _RollItemState extends State<RollItem> {
                       style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
                     Text(
+                      'Pattern: ${widget.rollData.shrinkPattern}',
+                      style: const TextStyle(color: Colors.black, fontSize: 16),
+                    ),
+                    Text(
                       'Shrink Length: ${widget.rollData.shrinkLength}',
                       style: const TextStyle(color: Colors.black, fontSize: 16),
                     ),
