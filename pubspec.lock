@@ -25,6 +25,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  barcode_scan2:
+    dependency: "direct main"
+    description:
+      name: barcode_scan2
+      sha256: "847ff88888213a3b2866d98839ee6d85e4da8002df83e7971d355d24d5f31c4c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.3.0"
   bloc:
     dependency: transitive
     description:
@@ -121,13 +129,21 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.5"
+  fixnum:
+    dependency: transitive
+    description:
+      name: fixnum
+      sha256: "25517a4deb0c03aa0f32fd12db525856438902d9c16536311e76cdc57b31d7d1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   flutter:
     dependency: "direct main"
     description: flutter
     source: sdk
     version: "0.0.0"
   flutter_barcode_scanner:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_barcode_scanner
       sha256: a4ba37daf9933f451a5e812c753ddd045d6354e4a3280342d895b07fecaab3fa
@@ -150,6 +166,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.11.0"
+  flutter_lints:
+    dependency: "direct dev"
+    description:
+      name: flutter_lints
+      sha256: e2a421b7e59244faef694ba7b30562e489c2b489866e505074eb005cd7060db7
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.1"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -195,6 +219,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.8.1"
+  lints:
+    dependency: transitive
+    description:
+      name: lints
+      sha256: cbf8d4b858bb0134ef3ef87841abdf8d63bfc255c266b7bf6b39daa1085c4290
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   material_color_utilities:
     dependency: transitive
     description:
@@ -211,14 +243,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.0"
-  mobile_scanner:
-    dependency: "direct main"
-    description:
-      name: mobile_scanner
-      sha256: da55204e5439bc8dc058df56231a7a1d513c6ec9cbad84492f56d493382d296f
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.2.0"
   nested:
     dependency: transitive
     description:
@@ -235,46 +259,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.3"
-  permission_handler:
-    dependency: transitive
-    description:
-      name: permission_handler
-      sha256: "1b6b3e73f0bcbc856548bbdfb1c33084a401c4f143e220629a9055233d76c331"
-      url: "https://pub.dev"
-    source: hosted
-    version: "10.3.0"
-  permission_handler_android:
-    dependency: transitive
-    description:
-      name: permission_handler_android
-      sha256: "8f6a95ccbca13766882f95d32684d7c9bfe6c45650c32bedba948ef1c6a4ddf7"
-      url: "https://pub.dev"
-    source: hosted
-    version: "10.2.3"
-  permission_handler_apple:
-    dependency: transitive
-    description:
-      name: permission_handler_apple
-      sha256: "08dcb6ce628ac0b257e429944b4c652c2a4e6af725bdf12b498daa2c6b2b1edb"
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.1.0"
-  permission_handler_platform_interface:
-    dependency: transitive
-    description:
-      name: permission_handler_platform_interface
-      sha256: de20a5c3269229c1ae2e5a6b822f6cb59578b23e8255c93fbeebfc82116e6b11
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.10.0"
-  permission_handler_windows:
-    dependency: transitive
-    description:
-      name: permission_handler_windows
-      sha256: f67cab14b4328574938ecea2db3475dad7af7ead6afab6338772c5f88963e38b
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.2"
   petitparser:
     dependency: transitive
     description:
@@ -299,6 +283,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.7.3"
+  protobuf:
+    dependency: transitive
+    description:
+      name: protobuf
+      sha256: "68645b24e0716782e58948f8467fd42a880f255096a821f9e7d0ec625b00c84d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
   provider:
     dependency: transitive
     description:
@@ -331,14 +323,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.0"
-  simple_barcode_scanner:
-    dependency: "direct main"
-    description:
-      name: simple_barcode_scanner
-      sha256: "2549a5a1426e2e3edb4fa2cd876fcf8463e09220cd36b5207742bc53e1d10fa6"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.8"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -400,14 +384,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.0"
-  webview_windows:
-    dependency: transitive
-    description:
-      name: webview_windows
-      sha256: a6d76f9f020e638c2e5417f473e2907c097d1fe3eac8bd4be7517bc3a0df6b86
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.2"
   xml:
     dependency: transitive
     description:

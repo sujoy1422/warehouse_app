@@ -1,5 +1,5 @@
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:warehouse_app/models/response_object.dart';
 import 'package:warehouse_app/repository/update_rfid/update_rfid_repository.dart';
 

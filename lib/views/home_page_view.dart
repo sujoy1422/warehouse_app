@@ -1,18 +1,22 @@
 // ignore_for_file: must_be_immutable
 
+import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:searchable_listview/searchable_listview.dart';
-import 'package:simple_barcode_scanner/enum.dart';
-import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'package:torch_light/torch_light.dart';
 import 'package:warehouse_app/cubit/inventory_cubit/inventory_cubit.dart';
+import 'package:warehouse_app/cubit/invoice_details/invoice_details_cubit.dart';
+import 'package:warehouse_app/cubit/invoice_status/invoice_status_cubit.dart';
 import 'package:warehouse_app/cubit/roll_data_cubit/roll_data_cubit.dart';
 import 'package:warehouse_app/models/inventory.dart';
+import 'package:warehouse_app/models/invoice_details.dart';
 import 'package:warehouse_app/models/login_object.dart';
 import 'package:warehouse_app/models/roll_data.dart';
 import 'package:warehouse_app/repository/inventory_repository/inventory_repo_impl.dart';
+import 'package:warehouse_app/repository/invoice_details_repository/invoice_details_repo_impl.dart';
+import 'package:warehouse_app/repository/invoice_status_repo/invoice_status_repo_impl.dart';
 import 'package:warehouse_app/repository/roll_data_repository/roll_data_repo_impl.dart';
 import 'package:warehouse_app/repository/update_rfid/update_rfid_repo_impl.dart';
 import 'package:warehouse_app/views/alert_dialog.dart';
@@ -27,6 +31,7 @@ TextEditingController? searchedText;
 class HomePage extends StatelessWidget {
   String? qrData;
   String? headerId;
+  String? lineId;
   LoginObject? loginObject;
   String? rfid;
   String? invoiceNo;
@@ -70,17 +75,28 @@ class HomePage extends StatelessWidget {
               )),
             ),
             BlocProvider(
+              create: (context) => (InvoiceDetailsCubit(
+                InvoiceDetailsRepoImpl(),
+              )),
+            ),
+            BlocProvider(
               create: (context) => (RollDataCubit(
                 RollDataRepoImpl(),
               )),
             ),
+            BlocProvider(
+              create: (context) => (InvoiceStatusCubit(
+                InvoiceStatusRepoImpl(),
+              )),
+            ),
           ],
           child: HomePageView(
-            qrData: this.qrData,
-            headerId: this.headerId,
-            loginObject: this.loginObject,
-            rfid: this.rfid,
-            invoiceNo: this.invoiceNo,
+            qrData: qrData,
+            headerId: headerId,
+            lineId: lineId,
+            loginObject: loginObject,
+            rfid: rfid,
+            invoiceNo: invoiceNo,
             showAll: showall,
             visible: visible,
           ),
@@ -94,6 +110,7 @@ class HomePageView extends StatefulWidget {
   String? rfid;
   String? qrData;
   String? headerId;
+  String? lineId;
   String? invoiceNo;
 
   String showAll;
@@ -103,6 +120,7 @@ class HomePageView extends StatefulWidget {
       {super.key,
       this.qrData,
       this.headerId,
+      this.lineId,
       this.loginObject,
       this.rfid,
       this.invoiceNo,
@@ -111,19 +129,15 @@ class HomePageView extends StatefulWidget {
 
   @override
   State<HomePageView> createState() => _HomePageViewState(
-      this.qrData,
-      this.headerId,
-      this.loginObject,
-      this.rfid,
-      this.invoiceNo,
-      this.showAll,
-      this.visible);
+      qrData, headerId, lineId, loginObject, rfid, invoiceNo, showAll, visible);
 }
 
 class _HomePageViewState extends State<HomePageView> {
   String? qrData;
   String? headerId;
+  String? lineId;
   String? invoiceNo;
+  String? articleNo;
   String? detailsId;
   LoginObject? loginObject;
   String? rfid;
@@ -131,21 +145,36 @@ class _HomePageViewState extends State<HomePageView> {
   bool visible;
 
   List<Inventory> inventory = <Inventory>[];
+  List<InvoiceDetails> fabricCode = <InvoiceDetails>[];
   List<String> inventoryList = [];
+  List<String> fabricCodeList = [];
   List<RollData> rollData = <RollData>[];
   List<String> rollList = <String>[];
   final controller = TextEditingController();
   ValueNotifier<String> noOfPackages = ValueNotifier("");
   int selectedSearchOption = 1;
 
+  String totalPcs = "";
+  String totalYards = "";
+  String attachedYards = "";
+  String attachedRolls = "";
+
   bool buttonPressed = false;
 
-  _HomePageViewState(this.qrData, this.headerId, this.loginObject, this.rfid,
-      this.invoiceNo, this.showAll, this.visible);
+  _HomePageViewState(this.qrData, this.headerId, this.lineId, this.loginObject,
+      this.rfid, this.invoiceNo, this.showAll, this.visible);
   @override
   void initState() {
     context.read<InventoryCubit>().getInventoryData("342");
 
+    // if (headerId != null && lineId != null) {
+    //   debugPrint("invoiceDetails");
+    //   context.read<InvoiceDetailsCubit>().getInvoiceDetails(headerId ?? "123");
+
+    //   context
+    //       .read<RollDataCubit>()
+    //       .getRollData(headerId ?? "123", lineId ?? "123", "0");
+    // }
     // if (headerId != null) {
     //   context.read<RollDataCubit>().getRollData(headerId!, "0");
     // }
@@ -154,7 +183,7 @@ class _HomePageViewState extends State<HomePageView> {
 
   @override
   Widget build(BuildContext context) {
-    // print(loginObject);
+    // debugPrint(loginObject);
 
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
@@ -164,7 +193,7 @@ class _HomePageViewState extends State<HomePageView> {
     //   listener: (context, state) {},
     //   builder: (context, state) {
     //     if (state is InventoryLoaded) {
-    //       print(state.inventory);
+    //       debugPrint(state.inventory);
     //     }
     //     return Container();
     //   },
@@ -192,8 +221,9 @@ class _HomePageViewState extends State<HomePageView> {
                         builder: (context, state) {
                           if (state is InventoryInitial) {
                             return Container(
-                              width: width * 0.55,
-                              margin: EdgeInsets.only(top: 20, bottom: 20),
+                              width: width * 0.45,
+                              margin:
+                                  const EdgeInsets.only(top: 20, bottom: 20),
                               child: DropdownSearch<String>(
                                   popupProps: const PopupProps.menu(
                                     showSelectedItems: true,
@@ -215,7 +245,7 @@ class _HomePageViewState extends State<HomePageView> {
                                         // hintText: "country in menu mode",
                                         ),
                                   ),
-                                  // onSaved: (newValue) => print("newvALUE:$newValue"),
+                                  // onSaved: (newValue) => debugPrint("newvALUE:$newValue"),
 
                                   // onSaved: jobList.value[0],
 
@@ -224,7 +254,7 @@ class _HomePageViewState extends State<HomePageView> {
                           } else if (state is InventoryLoading) {
                             return Container();
                           } else if (state is InventoryLoaded) {
-                            print("here");
+                            debugPrint("here");
 
                             // if(state.inventory)
                             inventoryList.clear();
@@ -233,11 +263,12 @@ class _HomePageViewState extends State<HomePageView> {
                                 .addAll(mapInventoryData(state.inventory));
                             inventory = state.inventory;
                             _selectedItem = "";
-                            // print("JobList:" + jobList.toString());
+                            // debugPrint("JobList:" + jobList.toString());
                             // dropDown(width);
                             return Container(
-                              width: width * 0.55,
-                              margin: EdgeInsets.only(top: 20, bottom: 20),
+                              width: width * 0.45,
+                              margin:
+                                  const EdgeInsets.only(top: 20, bottom: 20),
                               child: DropdownSearch<String>(
                                   popupProps: const PopupProps.menu(
                                     showSelectedItems: true,
@@ -260,7 +291,7 @@ class _HomePageViewState extends State<HomePageView> {
                                         // hintText: "country in menu mode",
                                         ),
                                   ),
-                                  // onSaved: (newValue) => print("newvALUE:$newValue"),
+                                  // onSaved: (newValue) => debugPrint("newvALUE:$newValue"),
 
                                   // onSaved: jobList.value[0],
 
@@ -269,7 +300,8 @@ class _HomePageViewState extends State<HomePageView> {
                                     // selectedItem.value = newValue ?? "0";
                                     // selectedItem.value;
                                     setState(() {
-                                      print(
+                                      articleNo = null;
+                                      debugPrint(
                                           "InventoryID:${state.inventory[inventoryList.indexOf(newValue!)].headerId!}");
 
                                       selectedSearchOption = 1;
@@ -278,14 +310,9 @@ class _HomePageViewState extends State<HomePageView> {
                                               inventoryList.indexOf(newValue)]
                                           .headerId!;
                                       invoiceNo = newValue;
-                                      context.read<RollDataCubit>().getRollData(
-                                          state
-                                              .inventory[inventoryList
-                                                  .indexOf(newValue)]
-                                              .headerId!,
-                                          "0");
-
-                                      visible = true;
+                                      context
+                                          .read<InvoiceDetailsCubit>()
+                                          .getInvoiceDetails(headerId ?? "123");
                                     });
                                     //newValue = "";
                                   }),
@@ -295,26 +322,138 @@ class _HomePageViewState extends State<HomePageView> {
                           }
                         },
                         listener: (context, state) {}),
-                    Visibility(
-                      visible: headerId != null ? true : false,
-                      child: ElevatedButton(
-                          onPressed: () {
-                            if (headerId != null) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => InvoiceStatusData(
-                                    headerId: headerId,
-                                    loginObject: loginObject,
-                                  ),
+                    BlocConsumer<InvoiceDetailsCubit, InvoiceDetailsState>(
+                      listener: (context, state) {
+                        // if (state is InvoiceDetailsLoaded) {
+                        //   if (articleNo != null &&
+                        //       state.invoiceDetails.isNotEmpty) {
+                        //     setState(() {
+                        //       totalYards = state
+                        //               .invoiceDetails[fabricCodeList
+                        //                   .indexOf(articleNo ?? "")]
+                        //               .totalYards ??
+                        //           "";
+                        //       totalPcs = state
+                        //               .invoiceDetails[fabricCodeList
+                        //                   .indexOf(articleNo ?? "")]
+                        //               .totalRolls ??
+                        //           "";
+                        //       attachedYards = state
+                        //               .invoiceDetails[fabricCodeList
+                        //                   .indexOf(articleNo ?? "")]
+                        //               .attachedLength ??
+                        //           "";
+                        //       attachedRolls = state
+                        //               .invoiceDetails[fabricCodeList
+                        //                   .indexOf(articleNo ?? "")]
+                        //               .attachedRoll ??
+                        //           "";
+                        //     });
+                        //   }
+                        // }
+                      },
+                      builder: (context, state) {
+                        if (state is InvoiceDetailsLoaded) {
+                          // if(state.inventory)
+                          fabricCodeList.clear();
+                          fabricCode.clear();
+                          // jobList.value.add("Select a Job");
+                          fabricCodeList
+                              .addAll(mapFabricCodeData(state.invoiceDetails));
+                          debugPrint(fabricCodeList.toString());
+                          fabricCode = state.invoiceDetails;
+                          _selectedItem = "";
+                          // debugPrint("JobList:" + jobList.toString());
+                          // dropDown(width);
+                          debugPrint(
+                              "invoice_details ${state.invoiceDetails}, $articleNo");
+
+                          return Container(
+                            width: width * 0.45,
+                            margin: const EdgeInsets.only(top: 20, bottom: 20),
+                            child: DropdownSearch<String>(
+                                popupProps: const PopupProps.menu(
+                                  showSelectedItems: true,
+
+                                  // disabledItemFn: (String s) => s.startsWith('I'),
+
+                                  showSearchBox: true,
                                 ),
-                              );
-                            } else {
-                              alertDialog(context, "Warning",
-                                  "Please Select the invoice number first!");
-                            }
-                          },
-                          child: Text("Check Status")),
+                                selectedItem: articleNo ?? _selectedItem,
+
+                                // clearButtonProps: ClearButtonProps(isVisible: true),
+                                items: fabricCodeList,
+                                dropdownDecoratorProps:
+                                    const DropDownDecoratorProps(
+                                  dropdownSearchDecoration: InputDecoration(
+                                      labelText: "Select Article No",
+                                      labelStyle: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20)
+                                      // hintText: "country in menu mode",
+                                      ),
+                                ),
+                                // onSaved: (newValue) => debugPrint("newvALUE:$newValue"),
+
+                                // onSaved: jobList.value[0],
+
+                                onChanged: (String? newValue) {
+                                  // context.read<JobCubit>().getJobData();
+                                  // selectedItem.value = newValue ?? "0";
+                                  // selectedItem.value;
+                                  setState(() {
+                                    debugPrint(
+                                        "article_no:${state.invoiceDetails[fabricCodeList.indexOf(newValue!)].articleNo}");
+                                    debugPrint(
+                                        "line_id:${state.invoiceDetails[fabricCodeList.indexOf(newValue)].lineId}");
+
+                                    // totalYards = state
+                                    //         .invoiceDetails[fabricCodeList
+                                    //             .indexOf(newValue)]
+                                    //         .totalYards ??
+                                    //     "";
+                                    // totalPcs = state
+                                    //         .invoiceDetails[fabricCodeList
+                                    //             .indexOf(newValue)]
+                                    //         .totalRolls ??
+                                    //     "";
+                                    // attachedYards = state
+                                    //         .invoiceDetails[fabricCodeList
+                                    //             .indexOf(newValue)]
+                                    //         .attachedLength ??
+                                    //     "";
+                                    // attachedRolls = state
+                                    //         .invoiceDetails[fabricCodeList
+                                    //             .indexOf(newValue)]
+                                    //         .attachedRoll ??
+                                    //     "";
+                                    selectedSearchOption = 1;
+                                    lineId = state
+                                        .invoiceDetails[
+                                            fabricCodeList.indexOf(newValue)]
+                                        .lineId;
+                                    articleNo = newValue;
+                                    context.read<RollDataCubit>().getRollData(
+                                        headerId ?? "123",
+                                        lineId ?? "123",
+                                        "0");
+
+                                    debugPrint(
+                                        "state_res_1 $headerId, $lineId");
+                                    context
+                                        .read<InvoiceStatusCubit>()
+                                        .getInvoiceStatus(
+                                            headerId ?? "", lineId ?? "");
+
+                                    visible = true;
+                                  });
+                                  //newValue = "";
+                                }),
+                          );
+                        } else {
+                          return Container();
+                        }
+                      },
                     )
                   ],
                 ),
@@ -338,10 +477,10 @@ class _HomePageViewState extends State<HomePageView> {
                                   });
                                 },
                               ),
-                              Text("Search by supplier roll"),
+                              const Text("Search by supplier roll"),
                             ],
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 20,
                           ),
                           Row(
@@ -355,34 +494,158 @@ class _HomePageViewState extends State<HomePageView> {
                                   });
                                 },
                               ),
-                              Text("Search by factory roll"),
+                              const Text("Search by factory roll"),
                             ],
                           ),
                         ],
                       ),
                       Container(
-                          alignment: Alignment.topLeft,
-                          padding: EdgeInsets.only(left: 20, bottom: 10),
-                          child: ElevatedButton(
-                              onPressed: () {
-                                if (showAll == "Show All") {
-                                  context
-                                      .read<RollDataCubit>()
-                                      .getRollData(headerId ?? "123", "1");
+                        margin: const EdgeInsets.only(bottom: 10),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                    alignment: Alignment.topLeft,
+                                    padding: const EdgeInsets.only(left: 20),
+                                    child: ElevatedButton(
+                                        onPressed: () {
+                                          if (showAll == "Show All") {
+                                            context
+                                                .read<RollDataCubit>()
+                                                .getRollData(headerId ?? "123",
+                                                    "18426", "1");
+                                          } else {
+                                            context
+                                                .read<RollDataCubit>()
+                                                .getRollData(headerId ?? "123",
+                                                    "18426", "0");
+                                          }
+                                          setState(() {
+                                            if (showAll == "Show All") {
+                                              showAll = "Hide";
+                                            } else {
+                                              showAll = "Show All";
+                                            }
+                                          });
+                                        },
+                                        child: Text(showAll))),
+                                const Spacer(),
+                                Visibility(
+                                  visible:
+                                      false, //headerId != null ? true : false,
+                                  child: Container(
+                                    margin: const EdgeInsets.only(right: 20),
+                                    child: ElevatedButton(
+                                        onPressed: () {
+                                          if (headerId != null) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    InvoiceStatusData(
+                                                  headerId: headerId,
+                                                  loginObject: loginObject,
+                                                ),
+                                              ),
+                                            );
+                                          } else {
+                                            alertDialog(context, "Warning",
+                                                "Please Select the invoice number first!");
+                                          }
+                                        },
+                                        child: const Text("Check Status")),
+                                  ),
+                                )
+                              ],
+                            ),
+                            BlocConsumer<InvoiceStatusCubit,
+                                InvoiceStatusState>(
+                              listener: (context, state) {},
+                              builder: (context, state) {
+                                if (state is InvoiceStatusLoaded) {
+                                  debugPrint(
+                                      "invoiceStatus ${state.invoiceStatus}");
+                                  return Card(
+                                    child: Container(
+                                      height: height * 0.1,
+                                      width: width,
+                                      color: const Color.fromARGB(
+                                          255, 255, 246, 246),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          const Text(
+                                            "Summary",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20,
+                                            ),
+                                          ),
+                                          Row(
+                                            children: [
+                                              Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "Total Rolls: ${state.invoiceStatus?.totalRolls ?? "0"} Pcs",
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 15),
+                                                  ),
+                                                  Text(
+                                                    "Total Length: ${state.invoiceStatus?.totalYards ?? "0"} Yards",
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 15),
+                                                  ),
+                                                ],
+                                              ),
+                                              const Spacer(),
+                                              Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "Attached Rolls: ${state.invoiceStatus?.attachedRoll ?? "0"}",
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 15),
+                                                  ),
+                                                  Text(
+                                                    "Attached Length: ${state.invoiceStatus?.attachedLength ?? "0"}",
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 15),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
                                 } else {
-                                  context
-                                      .read<RollDataCubit>()
-                                      .getRollData(headerId ?? "123", "0");
+                                  return Container();
                                 }
-                                setState(() {
-                                  if (showAll == "Show All") {
-                                    showAll = "Hide";
-                                  } else {
-                                    showAll = "Show All";
-                                  }
-                                });
                               },
-                              child: Text(showAll))),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -397,6 +660,7 @@ class _HomePageViewState extends State<HomePageView> {
                         loginObject: loginObject,
                         qrData: qrData,
                         headerId: headerId,
+                        lineId: lineId,
                         rfid: rfid,
                         invoiceNo: invoiceNo,
                         rollData: rollData,
@@ -412,6 +676,7 @@ class _HomePageViewState extends State<HomePageView> {
                         loginObject: loginObject,
                         qrData: qrData,
                         headerId: headerId,
+                        lineId: lineId,
                         rfid: rfid,
                         invoiceNo: invoiceNo,
                         rollData: rollData,
@@ -437,6 +702,7 @@ class searchacbleRollList extends StatelessWidget {
     required this.loginObject,
     required this.qrData,
     required this.headerId,
+    required this.lineId,
     required this.rfid,
     required this.invoiceNo,
     required this.rollData,
@@ -449,6 +715,7 @@ class searchacbleRollList extends StatelessWidget {
   final LoginObject? loginObject;
   final String? qrData;
   final String? headerId;
+  final String? lineId;
   final String? rfid;
   final String? invoiceNo;
   final String text;
@@ -463,7 +730,7 @@ class searchacbleRollList extends StatelessWidget {
         if (state is RollDataLoaded) {
           rollData.clear();
           rollData = state.rolldata;
-          print(rollData);
+          debugPrint(rollData.toString());
 
           return Container(
             height: height * 0.7,
@@ -478,6 +745,7 @@ class searchacbleRollList extends StatelessWidget {
                   rollData: rollData,
                   qrData: qrData,
                   headerId: headerId,
+                  lineId: lineId,
                   rfid: rfid,
                   invoiceNo: invoiceNo,
                 ),
@@ -504,7 +772,7 @@ class searchacbleRollList extends StatelessWidget {
                 }
               },
               // onItemSelected: (RollData item) {
-              //   print(item);
+              //   debugPrint(item);
               // },
               inputDecoration: InputDecoration(
                 labelText: text,
@@ -532,6 +800,7 @@ class RollItem extends StatefulWidget {
   final RollData rollData;
   String? qrData;
   String? headerId;
+  String? lineId;
   String? rfid;
   String? invoiceNo;
   int value;
@@ -544,6 +813,7 @@ class RollItem extends StatefulWidget {
     required this.value,
     this.qrData,
     this.headerId,
+    this.lineId,
     this.loginObject,
     this.rfid,
     this.invoiceNo,
@@ -630,10 +900,14 @@ class _RollItemState extends State<RollItem> {
               listener: (context, state) {},
               builder: (context, state) {
                 if (state is UpdateRfidLoaded) {
-                  if (state.response != "Data update unsuccessful!") {
-                    context
-                        .read<RollDataCubit>()
-                        .getRollData(widget.headerId ?? "", "0");
+                  debugPrint(
+                      "state_res ${state.response.response}, ${widget.headerId}, ${widget.lineId}");
+                  if (state.response.response != "Data update unsuccessful!") {
+                    context.read<RollDataCubit>().getRollData(
+                        widget.headerId ?? "", widget.lineId ?? "", "0");
+
+                    context.read<InvoiceStatusCubit>().getInvoiceStatus(
+                        widget.headerId ?? "", widget.lineId ?? "");
                   }
                 }
                 return Container();
@@ -643,7 +917,7 @@ class _RollItemState extends State<RollItem> {
             ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(10, 55),
-                  padding: EdgeInsets.only(left: 4, right: 4),
+                  padding: const EdgeInsets.only(left: 4, right: 4),
                 ),
                 onPressed: () async {
                   // QrBarCodeScannerDialog().getScannedQrBarCode(
@@ -651,7 +925,7 @@ class _RollItemState extends State<RollItem> {
                   //     onCode: (code) {
                   //       setState(() {
                   //         result = code;
-                  //         debugPrint("$result");
+                  //         debugdebugPrint("$result");
                   //         context.read<UpdateRfidCubit>().updateRfid(
                   //             widget.rollData.detailId,
                   //             result ?? "12345",
@@ -662,19 +936,26 @@ class _RollItemState extends State<RollItem> {
                   //       });
                   //     });
                   // _turnOnFlash(context);
-                  var res = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SimpleBarcodeScannerPage(
-                          isShowFlashIcon: true,
-                          scanType: ScanType.barcode,
-                          appBarTitle:
-                              "Scan for roll no: ${widget.rollData.factoryRoll}",
-                        ),
-                      ));
+                  var res = await BarcodeScanner.scan(
+                      options: const ScanOptions(
+                          autoEnableFlash: true,
+                          android: AndroidOptions(
+                              useAutoFocus: true, aspectTolerance: 20.2)));
+                  //  .scanBarcode(
+                  //     "#ff6666", "Cancel", false, ScanMode.DEFAULT);
+                  // await Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (context) => SimpleBarcodeScannerPage(
+                  //         isShowFlashIcon: true,
+                  //         scanType: ScanType.barcode,
+                  //         appBarTitle:
+                  //             "Scan for roll no: ${widget.rollData.factoryRoll}",
+                  //       ),
+                  //     ));
                   setState(() {
-                    if (res is String && res != '-1') {
-                      result = res;
+                    if (res.rawContent != '-1') {
+                      result = res.rawContent;
                       debugPrint("res_ba_c: $result");
                       context.read<UpdateRfidCubit>().updateRfid(
                           widget.rollData.detailId,
@@ -718,6 +999,11 @@ void _showErrorMes(String mes, BuildContext context) {
 List<String> mapInventoryData(List<Inventory> elementList) {
   // return Map.fromIterable(elementList, key: (element) => ,)
   return elementList.map((e) => e.invoiceNo.toString()).toList();
+}
+
+List<String> mapFabricCodeData(List<InvoiceDetails> elementList) {
+  // return Map.fromIterable(elementList, key: (element) => ,)
+  return elementList.map((e) => e.articleNo.toString()).toList();
 }
 
 List<String> mapRollList(List<RollData> elementList) {
@@ -801,7 +1087,7 @@ List<String> mapRollList(List<RollData> elementList) {
 // class _UpdatedRFIDViewState extends State<UpdatedRFIDView> {
 //   @override
 //   void initState() {
-//     // print("${widget.detailId},${widget.result},${widget.loginObject?.profile?.empNo},${}")
+//     // debugPrint("${widget.detailId},${widget.result},${widget.loginObject?.profile?.empNo},${}")
 //     // if (widget.entryType == "2" && widget.rfid != widget.result) {
 //     //   showDialog(
 //     //       context: context,
@@ -814,7 +1100,7 @@ List<String> mapRollList(List<RollData> elementList) {
 //     //             ]);
 //     //       });
 //     // } else {
-//     print('object_4');
+//     debugPrint('object_4');
 //     context.read<UpdateRfidCubit>().updateRfid(
 //         widget.detailId,
 //         widget.result ?? "12345",
@@ -845,13 +1131,13 @@ List<String> mapRollList(List<RollData> elementList) {
 //               (Route<dynamic> route) => false,
 //             );
 //           } else {
-//             print("response+${state.response}");
+//             debugPrint("response+${state.response}");
 //           }
 //         }
 //       },
 //       builder: (context, state) {
 //         if (state is UpdateRfidLoaded) {
-//           print("response+${state.response}");
+//           debugPrint("response+${state.response}");
 //           return Container();
 //         } else {
 //           return loadingScreen();

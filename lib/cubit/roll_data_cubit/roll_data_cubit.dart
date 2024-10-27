@@ -10,10 +10,10 @@ class RollDataCubit extends Cubit<RollDataState> {
 
   RollDataCubit(this._rollDataRepository) : super(const RollDataInitial());
 
-  Future<void> getRollData(String headerId, String showAll) async {
+  Future<void> getRollData(String headerId,String lineId, String showAll) async {
     try {
       emit(const RollDataLoading());
-      final rollData = await _rollDataRepository.fetchRollData(headerId, showAll);
+      final rollData = await _rollDataRepository.fetchRollData(headerId, lineId, showAll);
       emit(RollDataLoaded(rollData));
     } on Exception {
       emit(const RollDataError("Couldn't Fetch roll!"));

@@ -6,7 +6,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'package:warehouse_app/cubit/update_rfid/update_rfid_cubit.dart';
 import 'package:warehouse_app/repository/update_rfid/update_rfid_repo_impl.dart';
 import 'package:warehouse_app/views/alert_dialog.dart';
@@ -248,7 +247,7 @@ class _QRViewExampleState extends State<QRViewExample> {
     // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
     // To ensure the Scanner view is properly sizes after rotation
     // we need to listen for Flutter SizeChanged notification and update controller
-    return SimpleBarcodeScannerPage();
+    return Container();
   }
 
   void _onQRViewCreated(QRViewController controller) {

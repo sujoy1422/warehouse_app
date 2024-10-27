@@ -16,11 +16,11 @@ class InvoiceStatusLoading extends InvoiceStatusState {
 }
 
 class InvoiceStatusLoaded extends InvoiceStatusState {
-  final InvoiceStatus invoiceStatus;
+  final InvoiceStatus? invoiceStatus;
   const InvoiceStatusLoaded(this.invoiceStatus);
 
   @override
-  List<Object> get props => [invoiceStatus];
+  List<Object> get props => [invoiceStatus??""];
 }
 
 class InvoiceStatusError extends InvoiceStatusState {

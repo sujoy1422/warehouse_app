@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:warehouse_app/models/inspection_list/inspection_list.dart';
 import 'package:warehouse_app/models/inventory.dart';
+import 'package:warehouse_app/models/invoice_details.dart';
 import 'package:warehouse_app/models/invoice_status/invoice_status.dart';
 import 'package:warehouse_app/models/pallet_info/pallet_info.dart';
 import 'package:warehouse_app/models/response_object.dart';
@@ -34,7 +36,7 @@ class WebService {
     );
 
     if (response.statusCode == 200) {
-      print("Login Object\n" + response.toString());
+      debugPrint("Login Object\n" + response.toString());
       if (response.data != null) {
         return LoginObject?.fromJson(response.data);
       } else {
@@ -94,9 +96,11 @@ class WebService {
     }
   }
 
-  Future<List<RollData>> getRollData(String headerId, String showAll) async {
+  Future<List<RollData>> getRollData(
+      String headerId, String lineId, String showAll) async {
     var formDate = FormData.fromMap({
       'header_id': headerId,
+      'line_id': lineId,
       'show_all': showAll,
     });
 
@@ -114,7 +118,7 @@ class WebService {
   }
 
   Future<RfidName> getRfidName(String rfidNo) async {
-    print("hererrerer");
+    debugPrint("hererrerer");
     var formDate = FormData.fromMap({
       'rfid_no': rfidNo,
     });
@@ -123,7 +127,7 @@ class WebService {
       Constants.getRfidName,
       data: formDate,
     );
-    print(response.statusCode);
+    debugPrint("rfid_name ${response.statusCode}");
 
     if (response.statusCode == 200) {
       return RfidName.fromJson(response.data);
@@ -142,7 +146,7 @@ class WebService {
       Constants.insertIssueanceList,
       data: formDate,
     );
-    print(response);
+    debugPrint(response.toString());
 
     if (response.statusCode == 200) {
       return ResponseObject.fromJson(response.data);
@@ -152,7 +156,7 @@ class WebService {
   }
 
   Future<List<InspectionList>> getInspectionList(String empNo) async {
-    print("hererrerer");
+    debugPrint("hererrerer");
     var formDate = FormData.fromMap({
       'pallet_id': empNo,
     });
@@ -161,7 +165,7 @@ class WebService {
       Constants.getInspectionList,
       data: formDate,
     );
-    print("xx $response");
+    debugPrint("xx $response");
 
     if (response.statusCode == 200) {
       Iterable rollData = response.data;
@@ -276,9 +280,8 @@ class WebService {
     }
   }
 
-  Future<InvoiceStatus> getInvoiceStatus(
-      String headerId) async {
-    var formDate = FormData.fromMap({'header_id': headerId});
+  Future<InvoiceStatus> getInvoiceStatus(String headerId, String lineId) async {
+    var formDate = FormData.fromMap({'header_id': headerId, 'line_id': lineId});
 
     final response = await dio.post(
       Constants.getInvoiceStatus,
@@ -286,9 +289,26 @@ class WebService {
     );
 
     if (response.statusCode == 200) {
+      debugPrint("state_res_2${response.toString()}");
       return InvoiceStatus.fromJson(response.data);
     } else {
       throw Exception("Invoice Status exception!");
+    }
+  }
+
+  Future<List<InvoiceDetails>> getFabricCode(String headerId) async {
+    var formDate = FormData.fromMap({'header_id': headerId});
+
+    final response = await dio.post(
+      Constants.invoiceDetailsUrl,
+      data: formDate,
+    );
+
+    if (response.statusCode == 200) {
+      Iterable invoiceDetails = response.data;
+      return invoiceDetails.map((e) => InvoiceDetails.fromJson(e)).toList();
+    } else {
+      throw Exception("Inventory data fetch error!");
     }
   }
 }

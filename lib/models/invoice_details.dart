@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class InvoiceStatus extends Equatable {
+class InvoiceDetails extends Equatable {
   final String? headerId;
   final String? lineId;
   final String? articleNo;
@@ -9,7 +9,7 @@ class InvoiceStatus extends Equatable {
   final String? attachedLength;
   final String? attachedRoll;
 
-  const InvoiceStatus(
+  const InvoiceDetails(
       {this.headerId,
       this.lineId,
       this.articleNo,
@@ -18,8 +18,8 @@ class InvoiceStatus extends Equatable {
       this.attachedLength,
       this.attachedRoll});
 
-  factory InvoiceStatus.fromJson(Map<String, dynamic> json) {
-    return InvoiceStatus(
+  factory InvoiceDetails.fromJson(Map<String, dynamic> json) {
+    return InvoiceDetails(
         headerId: json['HEADER_ID'] as String?,
         lineId: json['LINE_ID'] as String?,
         articleNo: json['ARTICLE_NO'] as String?,

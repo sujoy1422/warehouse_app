@@ -14,8 +14,9 @@ class InvoiceStatusData extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar:
-            AppBar(title: Text("Invoice Status"), actions: [LogoutWidget()]),
+        appBar: AppBar(
+            title: const Text("Invoice Status"),
+            actions: const [LogoutWidget()]),
         body: BlocProvider(
           create: (context) => InvoiceStatusCubit(InvoiceStatusRepoImpl()),
           child: InvoiceStatusView(
@@ -39,7 +40,7 @@ class InvoiceStatusView extends StatefulWidget {
 class _InvoiceStatusViewState extends State<InvoiceStatusView> {
   @override
   void initState() {
-    context.read<InvoiceStatusCubit>().getInvoiceStatus(widget.headerId ?? "");
+    context.read<InvoiceStatusCubit>().getInvoiceStatus(widget.headerId ?? "","");
     super.initState();
   }
 
@@ -50,69 +51,72 @@ class _InvoiceStatusViewState extends State<InvoiceStatusView> {
         builder: (context, state) {
           if (state is InvoiceStatusLoaded) {
             return Container(
-              padding: EdgeInsets.only(left: 10),
+              padding: const EdgeInsets.only(left: 10),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Total roll: ${state.invoiceStatus.totRoll}",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    "Total roll: ${state.invoiceStatus}",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20),
                   ),
                   Text(
-                    "Attached roll: ${state.invoiceStatus.inserted}",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    "Attached roll: ${state.invoiceStatus}",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20),
                   ),
                   Text(
-                    "Remained: ${state.invoiceStatus.remained}",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    "Remained: ${state.invoiceStatus}",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 20),
                   ),
-                  Container(
-                    alignment: Alignment.center,
-                    padding: EdgeInsets.only(top: 20, bottom: 10),
-                    child: Text(
-                      "Wrong entry",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                  ),
-                  DataTable(columnSpacing: 20, columns: [
-                    DataColumn(
-                      label: Text(
-                        'Invoice\nNo',
-                        style: TextStyle(fontStyle: FontStyle.italic),
-                      ),
-                    ),
-                    DataColumn(
-                      label: Text(
-                        'Supplier\nRoll',
-                        style: TextStyle(fontStyle: FontStyle.italic),
-                      ),
-                    ),
-                    DataColumn(
-                      label: Text(
-                        'Factory\nRoll',
-                        style: TextStyle(fontStyle: FontStyle.italic),
-                      ),
-                    ),
-                    DataColumn(
-                      label: Text(
-                        'RFID',
-                        style: TextStyle(fontStyle: FontStyle.italic),
-                      ),
-                    ),
-                  ], rows: [
-                    for (var i in state.invoiceStatus.unmacthedList!)
-                      DataRow(cells: [
-                        DataCell(Text("${i.invoiceNo}")),
-                        DataCell(Text("${i.supplierRoll}")),
-                        DataCell(Text("${i.factoryRoll}")),
-                        DataCell(Text(
-                          "${i.rfid}",
-                          style: TextStyle(color: Colors.red),
-                        )),
-                      ]),
-                  ])
+                  //                 Container(
+                  //                   alignment: Alignment.center,
+                  //                   padding: const EdgeInsets.only(top: 20, bottom: 10),
+                  //                   child: const Text(
+                  //                     "Wrong entry",
+                  //                     style:
+                  //                         TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  //                   ),
+                  //                 ),
+                  //                 DataTable(columnSpacing: 20, columns: const [
+                  //                   DataColumn(
+                  //                     label: Text(
+                  //                       'Invoice\nNo',
+                  //                       style: TextStyle(fontStyle: FontStyle.italic),
+                  //                     ),
+                  //                   ),
+                  //                   DataColumn(
+                  //                     label: Text(
+                  //                       'Supplier\nRoll',
+                  //                       style: TextStyle(fontStyle: FontStyle.italic),
+                  //                     ),
+                  //                   ),
+                  //                   DataColumn(
+                  //                     label: Text(
+                  //                       'Factory\nRoll',
+                  //                       style: TextStyle(fontStyle: FontStyle.italic),
+                  //                     ),
+                  //                   ),
+                  //                   DataColumn(
+                  //                     label: Text(
+                  //                       'RFID',
+                  //                       style: TextStyle(fontStyle: FontStyle.italic),
+                  //                     ),
+                  //                   ),
+                  //                 ], rows: [
+                  //                   for (var i in state.invoiceStatus.unmacthedList!)
+                  //                     DataRow(cells: [
+                  //                       DataCell(Text("${i.invoiceNo}")),
+                  //                       DataCell(Text("${i.supplierRoll}")),
+                  //                       DataCell(Text("${i.factoryRoll}")),
+                  //                       DataCell(Text(
+                  //                         "${i.rfid}",
+                  //                         style: const TextStyle(color: Colors.red),
+                  //                       )),
+                  //                     ]),
+                  //                 ])
                 ],
               ),
             );

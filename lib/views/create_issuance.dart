@@ -1,8 +1,8 @@
 // ignore_for_file: must_be_immutable
 
+import 'package:barcode_scan2/barcode_scan2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'package:warehouse_app/cubit/insert_issuance_list/insert_issuance_list_cubit.dart';
 import 'package:warehouse_app/cubit/inspection_list/inspection_list_cubit.dart';
 import 'package:warehouse_app/models/login_object.dart';
@@ -22,7 +22,7 @@ class CreateIssuance extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Create Issuance"),
+        title: const Text("Create Issuance"),
         actions: [
           // PopUpMenu(
           //   text1: 'RFID card details',
@@ -30,7 +30,7 @@ class CreateIssuance extends StatelessWidget {
           //   value1: 1,
           //   value2: 3,
           // )
-          LogoutWidget()
+          const LogoutWidget()
         ],
       ),
       body: MultiBlocProvider(
@@ -84,24 +84,24 @@ class _CreateIssuanceScreenState extends State<CreateIssuanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(right: 10, top: 10, bottom: 10),
+      padding: const EdgeInsets.only(right: 10, top: 10, bottom: 10),
       child: Column(
         // mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           ElevatedButton(
             onPressed: () async {
-              var res = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SimpleBarcodeScannerPage(),
-                  ));
+              var res = await BarcodeScanner.scan(
+                  options: const ScanOptions(
+                      autoEnableFlash: true,
+                      android: AndroidOptions(
+                          useAutoFocus: true, aspectTolerance: 20.2)));
               setState(() {
                 result = res;
-                context.read<InspectionListCubit>().getInspectionData(res);
+                context.read<InspectionListCubit>().getInspectionData(res.rawContent);
               });
             },
-            child: Text("Scan RFID to add for issuance"),
+            child: const Text("Scan RFID to add for issuance"),
           ),
           BlocConsumer<InspectionListCubit, InspectionListState>(
             listener: (context, state) {
@@ -114,7 +114,7 @@ class _CreateIssuanceScreenState extends State<CreateIssuanceScreen> {
               if (state is InspectionListLoaded) {
                 print("object");
                 return Container(
-                  padding: EdgeInsets.only(left: 15),
+                  padding: const EdgeInsets.only(left: 15),
                   height: MediaQuery.of(context).size.height * 0.65,
                   width: MediaQuery.of(context).size.width * 0.9,
                   child: ListView.builder(
@@ -173,7 +173,7 @@ class _CreateIssuanceScreenState extends State<CreateIssuanceScreen> {
               }
             },
           ),
-          Spacer(),
+          const Spacer(),
           ElevatedButton(
               onPressed: () {
                 issuanceListLength = inspectionEntryList.length;
@@ -188,7 +188,7 @@ class _CreateIssuanceScreenState extends State<CreateIssuanceScreen> {
                       loginObject?.employeeNumber ?? "123456");
                 }
               },
-              child: Text("Submit")),
+              child: const Text("Submit")),
           BlocConsumer<InsertIssuanceListCubit, InsertIssuanceListState>(
             listener: (context, state) {
               // TODO: implement listener
@@ -260,7 +260,7 @@ class _CreateIssuanceScreenState extends State<CreateIssuanceScreen> {
                     children: <Widget>[
                       Row(
                         children: [
-                          Text(
+                          const Text(
                             "RFID: ",
                             style: TextStyle(
                               fontSize: 16,
@@ -274,16 +274,16 @@ class _CreateIssuanceScreenState extends State<CreateIssuanceScreen> {
                                 : state1 != null
                                     ? state1.inspectionList[index].rfid!
                                     : "0",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
-                          Text(
+                          const Text(
                             "Factory Roll ",
                             style: TextStyle(
                               fontSize: 16,
@@ -298,16 +298,16 @@ class _CreateIssuanceScreenState extends State<CreateIssuanceScreen> {
                                 : state1 != null
                                     ? state1.inspectionList[index].rfidEpc!
                                     : "0",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
-                          Text(
+                          const Text(
                             "Supplier Roll ",
                             style: TextStyle(
                               fontSize: 16,
@@ -322,7 +322,7 @@ class _CreateIssuanceScreenState extends State<CreateIssuanceScreen> {
                                 : state1 != null
                                     ? state1.inspectionList[index].factoryRoll!
                                     : "0",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                             ),
                           ),
@@ -359,11 +359,11 @@ class issuanceWidgetText extends StatelessWidget {
       children: [
         Text(
           "$text:  ",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         Text(
           "$value",
-          style: TextStyle(fontSize: 17),
+          style: const TextStyle(fontSize: 17),
         )
       ],
     );
