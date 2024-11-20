@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:warehouse_app/models/login_object.dart';
+import 'package:warehouse_app/views/maintenance.dart';
 import 'package:warehouse_app/views/search_by_style.dart';
 import 'package:warehouse_app/views/search_roll_location.dart';
 
@@ -16,14 +17,15 @@ class PopUpMenu extends StatelessWidget {
   int value2;
 
   LoginObject? loginObject;
-  PopUpMenu(
-      {super.key,
-      required this.text1,
-      required this.text2,
-      required this.text3,
-      required this.value1,
-      required this.value2,
-      this.loginObject,});
+  PopUpMenu({
+    super.key,
+    required this.text1,
+    required this.text2,
+    required this.text3,
+    required this.value1,
+    required this.value2,
+    this.loginObject,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +41,12 @@ class PopUpMenu extends StatelessWidget {
             ),
           );
         } else if (item == 2) {
-           
-
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Maintainance(),
+            ),
+          );
         } else if (item == 3) {
           Navigator.push(
             context,

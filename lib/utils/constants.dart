@@ -32,6 +32,7 @@ class Constants {
       "${baseUrlWarehouse}get_style_wise_count.php";
 
   static const getInvoiceStatus = "${baseUrlWarehouse}get_invoice_status.php";
+  static const getMaintainanceStatus = "${baseUrlWarehouse}maintainance.php";
 
   // static const profileApiUrl = "${baseUrl}profile_data.php";
 }

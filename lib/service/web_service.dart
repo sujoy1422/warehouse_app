@@ -4,6 +4,7 @@ import 'package:warehouse_app/models/inspection_list/inspection_list.dart';
 import 'package:warehouse_app/models/inventory.dart';
 import 'package:warehouse_app/models/invoice_details.dart';
 import 'package:warehouse_app/models/invoice_status/invoice_status.dart';
+import 'package:warehouse_app/models/maintainance.dart';
 import 'package:warehouse_app/models/pallet_info/pallet_info.dart';
 import 'package:warehouse_app/models/response_object.dart';
 import 'package:warehouse_app/models/rfid_for_inspection/rfid_for_inspection.dart';
@@ -307,6 +308,19 @@ class WebService {
     if (response.statusCode == 200) {
       Iterable invoiceDetails = response.data;
       return invoiceDetails.map((e) => InvoiceDetails.fromJson(e)).toList();
+    } else {
+      throw Exception("Inventory data fetch error!");
+    }
+  }
+
+  Future<MaintainanceResponse> maintainance() async {
+    final response = await dio.post(
+      Constants.getMaintainanceStatus,
+    );
+
+    if (response.statusCode == 200) {
+      debugPrint("state_res_2${response.toString()}");
+      return MaintainanceResponse.fromJson(response.data);
     } else {
       throw Exception("Inventory data fetch error!");
     }

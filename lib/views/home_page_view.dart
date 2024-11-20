@@ -57,7 +57,7 @@ class HomePage extends StatelessWidget {
           actions: <Widget>[
             PopUpMenu(
               text1: 'RFID card details',
-              text2: 'Invoice status',
+              text2: 'Maintenance',
               text3: 'Search roll location',
               value1: 1,
               value2: 2,
@@ -135,6 +135,7 @@ class HomePageView extends StatefulWidget {
 class _HomePageViewState extends State<HomePageView> {
   String? qrData;
   String? headerId;
+  String? headerId2;
   String? lineId;
   String? invoiceNo;
   String? articleNo;
@@ -148,6 +149,7 @@ class _HomePageViewState extends State<HomePageView> {
   List<InvoiceDetails> fabricCode = <InvoiceDetails>[];
   List<String> inventoryList = [];
   List<String> fabricCodeList = [];
+  List<String> fabricCodeList2 = [];
   List<RollData> rollData = <RollData>[];
   List<String> rollList = <String>[];
   final controller = TextEditingController();
@@ -188,6 +190,7 @@ class _HomePageViewState extends State<HomePageView> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     String _selectedItem = "";
+    bool statusChanged = true;
 
     // return BlocConsumer<InventoryCubit, InventoryState>(
     //   listener: (context, state) {},
@@ -213,249 +216,146 @@ class _HomePageViewState extends State<HomePageView> {
             alignment: Alignment.center,
             child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    BlocConsumer<InventoryCubit, InventoryState>(
-                        builder: (context, state) {
-                          if (state is InventoryInitial) {
-                            return Container(
-                              width: width * 0.45,
-                              margin:
-                                  const EdgeInsets.only(top: 20, bottom: 20),
-                              child: DropdownSearch<String>(
-                                  popupProps: const PopupProps.menu(
-                                    showSelectedItems: true,
-                                    // disabledItemFn: (String s) => s.startsWith('I'),
-
-                                    showSearchBox: true,
-                                  ),
-                                  selectedItem: invoiceNo ?? "",
-                                  // clearButtonProps: ClearButtonProps(isVisible: true),
-
-                                  items: inventoryList,
-                                  dropdownDecoratorProps:
-                                      const DropDownDecoratorProps(
-                                    dropdownSearchDecoration: InputDecoration(
-                                        labelText: "Select Inventory Data",
-                                        labelStyle: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20)
-                                        // hintText: "country in menu mode",
-                                        ),
-                                  ),
-                                  // onSaved: (newValue) => debugPrint("newvALUE:$newValue"),
-
-                                  // onSaved: jobList.value[0],
-
-                                  onChanged: (String? newValue) {}),
-                            );
-                          } else if (state is InventoryLoading) {
-                            return Container();
-                          } else if (state is InventoryLoaded) {
-                            debugPrint("here");
-
-                            // if(state.inventory)
-                            inventoryList.clear();
-                            // jobList.value.add("Select a Job");
-                            inventoryList
-                                .addAll(mapInventoryData(state.inventory));
-                            inventory = state.inventory;
-                            _selectedItem = "";
-                            // debugPrint("JobList:" + jobList.toString());
-                            // dropDown(width);
-                            return Container(
-                              width: width * 0.45,
-                              margin:
-                                  const EdgeInsets.only(top: 20, bottom: 20),
-                              child: DropdownSearch<String>(
-                                  popupProps: const PopupProps.menu(
-                                    showSelectedItems: true,
-
-                                    // disabledItemFn: (String s) => s.startsWith('I'),
-
-                                    showSearchBox: true,
-                                  ),
-                                  selectedItem: invoiceNo ?? _selectedItem,
-
-                                  // clearButtonProps: ClearButtonProps(isVisible: true),
-                                  items: inventoryList,
-                                  dropdownDecoratorProps:
-                                      const DropDownDecoratorProps(
-                                    dropdownSearchDecoration: InputDecoration(
-                                        labelText: "Select Inventory Data",
-                                        labelStyle: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20)
-                                        // hintText: "country in menu mode",
-                                        ),
-                                  ),
-                                  // onSaved: (newValue) => debugPrint("newvALUE:$newValue"),
-
-                                  // onSaved: jobList.value[0],
-
-                                  onChanged: (String? newValue) {
-                                    // context.read<JobCubit>().getJobData();
-                                    // selectedItem.value = newValue ?? "0";
-                                    // selectedItem.value;
-                                    setState(() {
-                                      articleNo = null;
-                                      debugPrint(
-                                          "InventoryID:${state.inventory[inventoryList.indexOf(newValue!)].headerId!}");
-
-                                      selectedSearchOption = 1;
-                                      headerId = state
-                                          .inventory[
-                                              inventoryList.indexOf(newValue)]
-                                          .headerId!;
-                                      invoiceNo = newValue;
-                                      context
-                                          .read<InvoiceDetailsCubit>()
-                                          .getInvoiceDetails(headerId ?? "123");
-                                    });
-                                    //newValue = "";
-                                  }),
-                            );
-                          } else {
-                            return Container();
-                          }
-                        },
-                        listener: (context, state) {}),
-                    BlocConsumer<InvoiceDetailsCubit, InvoiceDetailsState>(
-                      listener: (context, state) {
-                        // if (state is InvoiceDetailsLoaded) {
-                        //   if (articleNo != null &&
-                        //       state.invoiceDetails.isNotEmpty) {
-                        //     setState(() {
-                        //       totalYards = state
-                        //               .invoiceDetails[fabricCodeList
-                        //                   .indexOf(articleNo ?? "")]
-                        //               .totalYards ??
-                        //           "";
-                        //       totalPcs = state
-                        //               .invoiceDetails[fabricCodeList
-                        //                   .indexOf(articleNo ?? "")]
-                        //               .totalRolls ??
-                        //           "";
-                        //       attachedYards = state
-                        //               .invoiceDetails[fabricCodeList
-                        //                   .indexOf(articleNo ?? "")]
-                        //               .attachedLength ??
-                        //           "";
-                        //       attachedRolls = state
-                        //               .invoiceDetails[fabricCodeList
-                        //                   .indexOf(articleNo ?? "")]
-                        //               .attachedRoll ??
-                        //           "";
-                        //     });
-                        //   }
-                        // }
-                      },
-                      builder: (context, state) {
-                        if (state is InvoiceDetailsLoaded) {
-                          // if(state.inventory)
-                          fabricCodeList.clear();
-                          fabricCode.clear();
-                          // jobList.value.add("Select a Job");
-                          fabricCodeList
-                              .addAll(mapFabricCodeData(state.invoiceDetails));
-                          debugPrint(fabricCodeList.toString());
-                          fabricCode = state.invoiceDetails;
-                          _selectedItem = "";
-                          // debugPrint("JobList:" + jobList.toString());
-                          // dropDown(width);
-                          debugPrint(
-                              "invoice_details ${state.invoiceDetails}, $articleNo");
-
-                          return Container(
-                            width: width * 0.45,
-                            margin: const EdgeInsets.only(top: 20, bottom: 20),
-                            child: DropdownSearch<String>(
-                                popupProps: const PopupProps.menu(
-                                  showSelectedItems: true,
-
-                                  // disabledItemFn: (String s) => s.startsWith('I'),
-
-                                  showSearchBox: true,
-                                ),
-                                selectedItem: articleNo ?? _selectedItem,
-
-                                // clearButtonProps: ClearButtonProps(isVisible: true),
-                                items: fabricCodeList,
-                                dropdownDecoratorProps:
-                                    const DropDownDecoratorProps(
-                                  dropdownSearchDecoration: InputDecoration(
-                                      labelText: "Select Article No",
-                                      labelStyle: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 20)
-                                      // hintText: "country in menu mode",
-                                      ),
-                                ),
-                                // onSaved: (newValue) => debugPrint("newvALUE:$newValue"),
-
-                                // onSaved: jobList.value[0],
-
-                                onChanged: (String? newValue) {
-                                  // context.read<JobCubit>().getJobData();
-                                  // selectedItem.value = newValue ?? "0";
-                                  // selectedItem.value;
-                                  setState(() {
-                                    debugPrint(
-                                        "article_no:${state.invoiceDetails[fabricCodeList.indexOf(newValue!)].articleNo}");
-                                    debugPrint(
-                                        "line_id:${state.invoiceDetails[fabricCodeList.indexOf(newValue)].lineId}");
-
-                                    // totalYards = state
-                                    //         .invoiceDetails[fabricCodeList
-                                    //             .indexOf(newValue)]
-                                    //         .totalYards ??
-                                    //     "";
-                                    // totalPcs = state
-                                    //         .invoiceDetails[fabricCodeList
-                                    //             .indexOf(newValue)]
-                                    //         .totalRolls ??
-                                    //     "";
-                                    // attachedYards = state
-                                    //         .invoiceDetails[fabricCodeList
-                                    //             .indexOf(newValue)]
-                                    //         .attachedLength ??
-                                    //     "";
-                                    // attachedRolls = state
-                                    //         .invoiceDetails[fabricCodeList
-                                    //             .indexOf(newValue)]
-                                    //         .attachedRoll ??
-                                    //     "";
-                                    selectedSearchOption = 1;
-                                    lineId = state
-                                        .invoiceDetails[
-                                            fabricCodeList.indexOf(newValue)]
-                                        .lineId;
-                                    articleNo = newValue;
-                                    context.read<RollDataCubit>().getRollData(
-                                        headerId ?? "123",
-                                        lineId ?? "123",
-                                        "0");
-
-                                    debugPrint(
-                                        "state_res_1 $headerId, $lineId");
+                BlocConsumer<InventoryCubit, InventoryState>(
+                  builder: (context, state) {
+                    if (state is InventoryInitial) {
+                      return Container(
+                        width: width * 0.98,
+                        margin: const EdgeInsets.only(top: 20, bottom: 20),
+                        child: DropdownSearch<String>(
+                          popupProps: const PopupProps.menu(
+                            showSelectedItems: true,
+                            showSearchBox: true,
+                          ),
+                          selectedItem: inventoryList.contains(invoiceNo)
+                              ? invoiceNo
+                              : null,
+                          items: inventoryList,
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              labelText: "Select Inventory Data",
+                              labelStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              invoiceNo = newValue;
+                            });
+                          },
+                        ),
+                      );
+                    } else if (state is InventoryLoading) {
+                      return Container();
+                    } else if (state is InventoryLoaded) {
+                      inventoryList.clear();
+                      inventoryList.addAll(mapInventoryData(state.inventory));
+                      return Container(
+                        width: width * 0.98,
+                        margin: const EdgeInsets.only(top: 20, bottom: 20),
+                        child: DropdownSearch<String>(
+                          popupProps: const PopupProps.menu(
+                            showSelectedItems: true,
+                            showSearchBox: true,
+                          ),
+                          selectedItem: inventoryList.contains(invoiceNo)
+                              ? invoiceNo
+                              : null,
+                          items: inventoryList,
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              labelText: "Select Invoice ~ Header No",
+                              labelStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              invoiceNo = newValue;
+                              articleNo = null;
+                              if (newValue != null) {
+                                final index = inventoryList.indexOf(newValue);
+                                if (index != -1) {
+                                  headerId = state.inventory[index].headerId!;
+                                  if (statusChanged) {
                                     context
-                                        .read<InvoiceStatusCubit>()
-                                        .getInvoiceStatus(
-                                            headerId ?? "", lineId ?? "");
-
-                                    visible = true;
-                                  });
-                                  //newValue = "";
-                                }),
-                          );
-                        } else {
-                          return Container();
-                        }
-                      },
-                    )
-                  ],
+                                        .read<InvoiceDetailsCubit>()
+                                        .getInvoiceDetails(headerId!);
+                                  }
+                                }
+                              }
+                              statusChanged = false;
+                            });
+                          },
+                        ),
+                      );
+                    } else {
+                      return Container();
+                    }
+                  },
+                  listener: (context, state) {},
+                ),
+                BlocConsumer<InvoiceDetailsCubit, InvoiceDetailsState>(
+                  listener: (context, state) {},
+                  builder: (context, state) {
+                    if ((state is InvoiceDetailsLoaded) && statusChanged) {
+                      fabricCodeList.clear();
+                      fabricCodeList
+                          .addAll(mapFabricCodeData(state.invoiceDetails));
+                      return Container(
+                        width: width * 0.98,
+                        margin: const EdgeInsets.only(top: 20, bottom: 20),
+                        child: DropdownSearch<String>(
+                          popupProps: const PopupProps.menu(
+                            showSelectedItems: true,
+                            showSearchBox: true,
+                          ),
+                          selectedItem: fabricCodeList.contains(articleNo)
+                              ? articleNo
+                              : null,
+                          items: fabricCodeList,
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              labelText: "Select Article / Style ~ Season",
+                              labelStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              articleNo = newValue;
+                              if (newValue != null) {
+                                final index = fabricCodeList.indexOf(newValue);
+                                if (index != -1) {
+                                  lineId = state.invoiceDetails[index].lineId!;
+                                  context.read<RollDataCubit>().getRollData(
+                                        headerId ?? "123",
+                                        lineId!,
+                                        "0",
+                                      );
+                                  context
+                                      .read<InvoiceStatusCubit>()
+                                      .getInvoiceStatus(
+                                        headerId ?? "",
+                                        lineId!,
+                                      );
+                                }
+                              }
+                              visible = true;
+                            });
+                          },
+                        ),
+                      );
+                    } else {
+                      return Container();
+                    }
+                  },
                 ),
                 Visibility(
                   visible: visible,
