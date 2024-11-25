@@ -6,14 +6,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:searchable_listview/searchable_listview.dart';
 import 'package:torch_light/torch_light.dart';
+import 'package:warehouse_app/cubit/fabric_code_Style/fabric_code_style_cubit.dart';
 import 'package:warehouse_app/cubit/inventory_cubit/inventory_cubit.dart';
 import 'package:warehouse_app/cubit/invoice_details/invoice_details_cubit.dart';
 import 'package:warehouse_app/cubit/invoice_status/invoice_status_cubit.dart';
 import 'package:warehouse_app/cubit/roll_data_cubit/roll_data_cubit.dart';
+import 'package:warehouse_app/models/fabric_code_style/fabric_code_style.dart';
 import 'package:warehouse_app/models/inventory.dart';
 import 'package:warehouse_app/models/invoice_details.dart';
 import 'package:warehouse_app/models/login_object.dart';
 import 'package:warehouse_app/models/roll_data.dart';
+import 'package:warehouse_app/repository/fabric_code_style_repository/fabric_code_style_repo_impl.dart';
 import 'package:warehouse_app/repository/inventory_repository/inventory_repo_impl.dart';
 import 'package:warehouse_app/repository/invoice_details_repository/invoice_details_repo_impl.dart';
 import 'package:warehouse_app/repository/invoice_status_repo/invoice_status_repo_impl.dart';
@@ -58,9 +61,10 @@ class HomePage extends StatelessWidget {
             PopUpMenu(
               text1: 'RFID card details',
               text2: 'Maintenance',
-              text3: 'Search roll location',
+              text4: 'Refresh',
               value1: 1,
               value2: 2,
+              value3:3,
               loginObject: loginObject,
             ),
             // LogoutWidget(),
@@ -87,6 +91,11 @@ class HomePage extends StatelessWidget {
             BlocProvider(
               create: (context) => (InvoiceStatusCubit(
                 InvoiceStatusRepoImpl(),
+              )),
+            ),
+            BlocProvider(
+              create: (context) => (FabricCodeStyleCubit(
+                FabricCodeStyleRepoImpl(),
               )),
             ),
           ],
@@ -139,6 +148,7 @@ class _HomePageViewState extends State<HomePageView> {
   String? lineId;
   String? invoiceNo;
   String? articleNo;
+  String? styleNo;
   String? detailsId;
   LoginObject? loginObject;
   String? rfid;
@@ -149,6 +159,7 @@ class _HomePageViewState extends State<HomePageView> {
   List<InvoiceDetails> fabricCode = <InvoiceDetails>[];
   List<String> inventoryList = [];
   List<String> fabricCodeList = [];
+  List<String> fabricCodeStyleList = [];
   List<String> fabricCodeList2 = [];
   List<RollData> rollData = <RollData>[];
   List<String> rollList = <String>[];
@@ -277,6 +288,7 @@ class _HomePageViewState extends State<HomePageView> {
                             setState(() {
                               invoiceNo = newValue;
                               articleNo = null;
+                              lineId = "null";
                               if (newValue != null) {
                                 final index = inventoryList.indexOf(newValue);
                                 if (index != -1) {
@@ -320,7 +332,7 @@ class _HomePageViewState extends State<HomePageView> {
                           items: fabricCodeList,
                           dropdownDecoratorProps: const DropDownDecoratorProps(
                             dropdownSearchDecoration: InputDecoration(
-                              labelText: "Select Article / Style ~ Season",
+                              labelText: "Select Article",
                               labelStyle: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 20,
@@ -333,17 +345,93 @@ class _HomePageViewState extends State<HomePageView> {
                               if (newValue != null) {
                                 final index = fabricCodeList.indexOf(newValue);
                                 if (index != -1) {
-                                  lineId = state.invoiceDetails[index].lineId!;
+                                  articleNo =
+                                      state.invoiceDetails[index].articlesNo ??
+                                          "";
+
+                                  lineId = "null";
+
+                                  debugPrint(
+                                      "header_id: $headerId, article, $articleNo, line_id, $lineId");
                                   context.read<RollDataCubit>().getRollData(
-                                        headerId ?? "123",
-                                        lineId!,
-                                        "0",
-                                      );
+                                      headerId ?? "",
+                                      articleNo ?? "",
+                                      "null",
+                                      "0");
                                   context
                                       .read<InvoiceStatusCubit>()
                                       .getInvoiceStatus(
                                         headerId ?? "",
-                                        lineId!,
+                                        articleNo ?? "",
+                                        "null",
+                                      );
+                                  context
+                                      .read<FabricCodeStyleCubit>()
+                                      .getfabricCodetStyle(
+                                          headerId ?? "", articleNo ?? "");
+                                }
+                              }
+                              visible = true;
+                            });
+                          },
+                        ),
+                      );
+                    } else {
+                      return Container();
+                    }
+                  },
+                ),
+                BlocConsumer<FabricCodeStyleCubit, FabricCodeStyleState>(
+                  listener: (context, state) {},
+                  builder: (context, state) {
+                    if ((state is FabricCodeStyleLoaded) && statusChanged) {
+                      fabricCodeStyleList.clear();
+                      fabricCodeStyleList.addAll(
+                          mapFabricCodeStyleData(state.fabricCodeStyle));
+                      return Container(
+                        width: width * 0.98,
+                        margin: const EdgeInsets.only(top: 20, bottom: 20),
+                        child: DropdownSearch<String>(
+                          popupProps: const PopupProps.menu(
+                            showSelectedItems: true,
+                            showSearchBox: true,
+                          ),
+                          selectedItem: fabricCodeStyleList.contains(styleNo)
+                              ? styleNo
+                              : null,
+                          items: fabricCodeStyleList,
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              labelText: "Select Style ~ Season",
+                              labelStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              styleNo = newValue;
+                              if (newValue != null) {
+                                final index =
+                                    fabricCodeStyleList.indexOf(newValue);
+                                if (index != -1) {
+                                  lineId =
+                                      state.fabricCodeStyle[index].lineId ?? "";
+
+                                  debugPrint(
+                                      "header_id: $headerId, article, $articleNo, line_id, $lineId");
+                                  context.read<RollDataCubit>().getRollData(
+                                      headerId ?? "",
+                                      articleNo ?? "",
+                                      lineId ?? "",
+                                      "0");
+                                  context
+                                      .read<InvoiceStatusCubit>()
+                                      .getInvoiceStatus(
+                                        headerId ?? "",
+                                        articleNo ?? "",
+                                        lineId ?? "",
                                       );
                                 }
                               }
@@ -411,15 +499,23 @@ class _HomePageViewState extends State<HomePageView> {
                                     child: ElevatedButton(
                                         onPressed: () {
                                           if (showAll == "Show All") {
+                                            debugPrint(
+                                                'show_all $headerId $articleNo');
                                             context
                                                 .read<RollDataCubit>()
-                                                .getRollData(headerId ?? "123",
-                                                    "18426", "1");
+                                                .getRollData(
+                                                    headerId ?? "123",
+                                                    articleNo ?? "",
+                                                    lineId ?? "null",
+                                                    "1");
                                           } else {
                                             context
                                                 .read<RollDataCubit>()
-                                                .getRollData(headerId ?? "123",
-                                                    "18426", "0");
+                                                .getRollData(
+                                                    headerId ?? "123",
+                                                    articleNo ?? "",
+                                                    lineId ?? "null",
+                                                    "0");
                                           }
                                           setState(() {
                                             if (showAll == "Show All") {
@@ -560,6 +656,7 @@ class _HomePageViewState extends State<HomePageView> {
                         loginObject: loginObject,
                         qrData: qrData,
                         headerId: headerId,
+                        articleNo: articleNo,
                         lineId: lineId,
                         rfid: rfid,
                         invoiceNo: invoiceNo,
@@ -576,6 +673,7 @@ class _HomePageViewState extends State<HomePageView> {
                         loginObject: loginObject,
                         qrData: qrData,
                         headerId: headerId,
+                        articleNo: articleNo,
                         lineId: lineId,
                         rfid: rfid,
                         invoiceNo: invoiceNo,
@@ -602,6 +700,7 @@ class searchacbleRollList extends StatelessWidget {
     required this.loginObject,
     required this.qrData,
     required this.headerId,
+    required this.articleNo,
     required this.lineId,
     required this.rfid,
     required this.invoiceNo,
@@ -615,6 +714,7 @@ class searchacbleRollList extends StatelessWidget {
   final LoginObject? loginObject;
   final String? qrData;
   final String? headerId;
+  final String? articleNo;
   final String? lineId;
   final String? rfid;
   final String? invoiceNo;
@@ -645,6 +745,7 @@ class searchacbleRollList extends StatelessWidget {
                   rollData: rollData,
                   qrData: qrData,
                   headerId: headerId,
+                  articleNo: articleNo,
                   lineId: lineId,
                   rfid: rfid,
                   invoiceNo: invoiceNo,
@@ -700,6 +801,7 @@ class RollItem extends StatefulWidget {
   final RollData rollData;
   String? qrData;
   String? headerId;
+  String? articleNo;
   String? lineId;
   String? rfid;
   String? invoiceNo;
@@ -713,6 +815,7 @@ class RollItem extends StatefulWidget {
     required this.value,
     this.qrData,
     this.headerId,
+    this.articleNo,
     this.lineId,
     this.loginObject,
     this.rfid,
@@ -804,10 +907,18 @@ class _RollItemState extends State<RollItem> {
                       "state_res ${state.response.response}, ${widget.headerId}, ${widget.lineId}");
                   if (state.response.response != "Data update unsuccessful!") {
                     context.read<RollDataCubit>().getRollData(
-                        widget.headerId ?? "", widget.lineId ?? "", "0");
+                        widget.headerId ?? "",
+                        widget.articleNo ?? "",
+                        widget.lineId ?? "null",
+                        "0");
+
+                    debugPrint(
+                        "update_status ${widget.headerId}, ${widget.articleNo}");
 
                     context.read<InvoiceStatusCubit>().getInvoiceStatus(
-                        widget.headerId ?? "", widget.lineId ?? "");
+                        widget.headerId ?? "",
+                        widget.articleNo ?? "",
+                        widget.lineId ?? "null");
                   }
                 }
                 return Container();
@@ -904,6 +1015,11 @@ List<String> mapInventoryData(List<Inventory> elementList) {
 List<String> mapFabricCodeData(List<InvoiceDetails> elementList) {
   // return Map.fromIterable(elementList, key: (element) => ,)
   return elementList.map((e) => e.articleNo.toString()).toList();
+}
+
+List<String> mapFabricCodeStyleData(List<FabricCodeStyle> elementList) {
+  // return Map.fromIterable(elementList, key: (element) => ,)
+  return elementList.map((e) => e.styleNo.toString()).toList();
 }
 
 List<String> mapRollList(List<RollData> elementList) {

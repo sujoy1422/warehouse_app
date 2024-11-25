@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:warehouse_app/models/login_object.dart';
+import 'package:warehouse_app/views/home_page_view.dart';
 import 'package:warehouse_app/views/maintenance.dart';
 import 'package:warehouse_app/views/search_by_style.dart';
 import 'package:warehouse_app/views/search_roll_location.dart';
@@ -12,18 +13,20 @@ import '../rfid_card_details.dart';
 class PopUpMenu extends StatelessWidget {
   String text1;
   String text2;
-  String text3;
+  String text4;
   int value1;
   int value2;
+  int value3;
 
   LoginObject? loginObject;
   PopUpMenu({
     super.key,
     required this.text1,
     required this.text2,
-    required this.text3,
+    required this.text4,
     required this.value1,
     required this.value2,
+    required this.value3,
     this.loginObject,
   });
 
@@ -41,18 +44,26 @@ class PopUpMenu extends StatelessWidget {
             ),
           );
         } else if (item == 2) {
-          Navigator.push(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (context) => const Maintainance(),
+              builder: (context) => Maintainance(
+                loginObject: loginObject,
+              ),
             ),
+            (Route<dynamic> route) => false,
           );
         } else if (item == 3) {
-          Navigator.push(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (context) => SearchRoll(),
+              builder: (context) => HomePage(
+                loginObject: loginObject,
+                showall: "Show All",
+                visible: false,
+              ),
             ),
+            (Route<dynamic> route) => false,
           );
         } else {
           Navigator.push(
@@ -66,6 +77,7 @@ class PopUpMenu extends StatelessWidget {
         PopupMenuItem<int>(value: 0, child: Text('Logout')),
         PopupMenuItem<int>(value: value1, child: Text(text1)),
         PopupMenuItem<int>(value: value2, child: Text(text2)),
+        PopupMenuItem<int>(value: value3, child: Text(text4)),
       ],
     );
   }

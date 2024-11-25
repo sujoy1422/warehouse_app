@@ -2,8 +2,8 @@ import 'package:equatable/equatable.dart';
 
 class InvoiceDetails extends Equatable {
   final String? headerId;
-  final String? lineId;
   final String? articleNo;
+  final String? articlesNo;
   final String? totalRolls;
   final String? totalYards;
   final String? attachedLength;
@@ -11,8 +11,8 @@ class InvoiceDetails extends Equatable {
 
   const InvoiceDetails(
       {this.headerId,
-      this.lineId,
       this.articleNo,
+      this.articlesNo,
       this.totalRolls,
       this.totalYards,
       this.attachedLength,
@@ -21,8 +21,8 @@ class InvoiceDetails extends Equatable {
   factory InvoiceDetails.fromJson(Map<String, dynamic> json) {
     return InvoiceDetails(
         headerId: json['HEADER_ID'] as String?,
-        lineId: json['LINE_ID'] as String?,
         articleNo: json['ARTICLE_NO'] as String?,
+        articlesNo: json['ARTICLES_NO'] as String?,
         totalRolls: json['TOTAL_ROLLS'] as String?,
         totalYards: json['TOTAL_YARDS'] as String?,
         attachedLength: json['ATTACHED_LENGTH'] as String?,
@@ -31,8 +31,8 @@ class InvoiceDetails extends Equatable {
 
   Map<String, dynamic> toJson() => {
         'HEADER_ID': headerId,
-        'LINE_ID': lineId,
         'ARTICLE_NO': articleNo,
+        'ARTICLES_NO': articlesNo,
         'TOTAL_ROLLS': totalRolls,
         'TOTAL_YARDS': totalYards,
         'ATTACHED_LENGTH': attachedLength,
@@ -43,8 +43,8 @@ class InvoiceDetails extends Equatable {
   List<Object?> get props {
     return [
       headerId,
-      lineId,
       articleNo,
+      articlesNo,
       totalRolls,
       totalYards,
       attachedLength,

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:warehouse_app/models/fabric_code_style/fabric_code_style.dart';
 import 'package:warehouse_app/models/inspection_list/inspection_list.dart';
 import 'package:warehouse_app/models/inventory.dart';
 import 'package:warehouse_app/models/invoice_details.dart';
@@ -98,10 +99,11 @@ class WebService {
   }
 
   Future<List<RollData>> getRollData(
-      String headerId, String lineId, String showAll) async {
+      String headerId, String articleNo, String lineId, String showAll) async {
     var formDate = FormData.fromMap({
       'header_id': headerId,
       'line_id': lineId,
+      'article_no': articleNo,
       'show_all': showAll,
     });
 
@@ -109,6 +111,7 @@ class WebService {
       Constants.rollDataUrl,
       data: formDate,
     );
+    debugPrint("response: $response");
 
     if (response.statusCode == 200) {
       Iterable rollData = response.data;
@@ -281,8 +284,10 @@ class WebService {
     }
   }
 
-  Future<InvoiceStatus> getInvoiceStatus(String headerId, String lineId) async {
-    var formDate = FormData.fromMap({'header_id': headerId, 'line_id': lineId});
+  Future<InvoiceStatus> getInvoiceStatus(
+      String headerId, String articleNo, String lineId) async {
+    var formDate = FormData.fromMap(
+        {'header_id': headerId, 'article_no': articleNo, 'line_id': lineId});
 
     final response = await dio.post(
       Constants.getInvoiceStatus,
@@ -308,6 +313,22 @@ class WebService {
     if (response.statusCode == 200) {
       Iterable invoiceDetails = response.data;
       return invoiceDetails.map((e) => InvoiceDetails.fromJson(e)).toList();
+    } else {
+      throw Exception("Inventory data fetch error!");
+    }
+  }
+
+  Future<List<FabricCodeStyle>> getFabricCodeStyle(String headerId, String articleNo) async {
+    var formDate = FormData.fromMap({'header_id': headerId, 'article_no' : articleNo});
+
+    final response = await dio.post(
+      Constants.fabricCodeStyle,
+      data: formDate,
+    );
+
+    if (response.statusCode == 200) {
+      Iterable invoiceDetails = response.data;
+      return invoiceDetails.map((e) => FabricCodeStyle.fromJson(e)).toList();
     } else {
       throw Exception("Inventory data fetch error!");
     }
