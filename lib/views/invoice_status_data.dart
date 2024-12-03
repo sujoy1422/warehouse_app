@@ -40,7 +40,9 @@ class InvoiceStatusView extends StatefulWidget {
 class _InvoiceStatusViewState extends State<InvoiceStatusView> {
   @override
   void initState() {
-    context.read<InvoiceStatusCubit>().getInvoiceStatus(widget.headerId ?? "", "","");
+    context
+        .read<InvoiceStatusCubit>()
+        .getInvoiceStatus(widget.headerId ?? "", "", "", "");
     super.initState();
   }
 

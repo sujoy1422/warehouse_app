@@ -1,6 +1,6 @@
 class Constants {
   static const appTitle = "Warehouse";
-  static const appVersion = "App Version 1.6.4";
+  static const appVersion = "App Version 1.6.5";
 
 // //Api Url
 //   static const baseUrl =
@@ -34,6 +34,7 @@ class Constants {
 
   static const getInvoiceStatus = "${baseUrlWarehouse}get_invoice_status.php";
   static const getMaintainanceStatus = "${baseUrlWarehouse}maintainance.php";
+  static const getInvoiceStyle = "${baseUrlWarehouse}get_invoice_styles.php";
 
   // static const profileApiUrl = "${baseUrl}profile_data.php";
 }

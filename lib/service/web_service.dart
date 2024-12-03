@@ -5,6 +5,7 @@ import 'package:warehouse_app/models/inspection_list/inspection_list.dart';
 import 'package:warehouse_app/models/inventory.dart';
 import 'package:warehouse_app/models/invoice_details.dart';
 import 'package:warehouse_app/models/invoice_status/invoice_status.dart';
+import 'package:warehouse_app/models/invoice_styles/invoice_styles.dart';
 import 'package:warehouse_app/models/maintainance.dart';
 import 'package:warehouse_app/models/pallet_info/pallet_info.dart';
 import 'package:warehouse_app/models/response_object.dart';
@@ -233,12 +234,19 @@ class WebService {
   }
 
   Future<ResponseObject> getResponseObject(
-      String detailsId, String rfid, String entryBy, String entryType) async {
+      String detailsId,
+      String rfid,
+      String entryBy,
+      String entryType,
+      String pocId,
+      String checkStatus) async {
     var formDate = FormData.fromMap({
       'detail_id': detailsId,
       'rfid': rfid,
       'entry_by': entryBy,
       'entry_type': entryType,
+      'poc_id': pocId,
+      'check_status': checkStatus,
     });
 
     final response = await dio.post(
@@ -285,9 +293,13 @@ class WebService {
   }
 
   Future<InvoiceStatus> getInvoiceStatus(
-      String headerId, String articleNo, String lineId) async {
-    var formDate = FormData.fromMap(
-        {'header_id': headerId, 'article_no': articleNo, 'line_id': lineId});
+      String headerId, String articleNo, String lineId, String pocId) async {
+    var formDate = FormData.fromMap({
+      'header_id': headerId,
+      'article_no': articleNo,
+      'line_id': lineId,
+      'poc_id': pocId
+    });
 
     final response = await dio.post(
       Constants.getInvoiceStatus,
@@ -299,6 +311,24 @@ class WebService {
       return InvoiceStatus.fromJson(response.data);
     } else {
       throw Exception("Invoice Status exception!");
+    }
+  }
+
+  Future<List<InvoiceStyles>> getInvoiceStyle(
+      String headerId, String articleNo, String lineId) async {
+    var formDate = FormData.fromMap(
+        {'header_id': headerId, 'article_no': articleNo, 'line_id': lineId});
+
+    final response = await dio.post(
+      Constants.getInvoiceStyle,
+      data: formDate,
+    );
+
+    if (response.statusCode == 200) {
+      Iterable invoiceStyles = response.data;
+      return invoiceStyles.map((e) => InvoiceStyles.fromJson(e)).toList();
+    } else {
+      throw Exception("Invoice Style exception!");
     }
   }
 
@@ -318,8 +348,10 @@ class WebService {
     }
   }
 
-  Future<List<FabricCodeStyle>> getFabricCodeStyle(String headerId, String articleNo) async {
-    var formDate = FormData.fromMap({'header_id': headerId, 'article_no' : articleNo});
+  Future<List<FabricCodeStyle>> getFabricCodeStyle(
+      String headerId, String articleNo) async {
+    var formDate =
+        FormData.fromMap({'header_id': headerId, 'article_no': articleNo});
 
     final response = await dio.post(
       Constants.fabricCodeStyle,

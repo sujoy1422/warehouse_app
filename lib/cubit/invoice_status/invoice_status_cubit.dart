@@ -12,11 +12,11 @@ class InvoiceStatusCubit extends Cubit<InvoiceStatusState> {
       : super(const InvoiceStatusInitial());
 
   Future<void> getInvoiceStatus(
-      String headerId, String articleNo, String lineId) async {
+      String headerId, String articleNo, String lineId, String pocId) async {
     try {
       emit(const InvoiceStatusLoading());
       final invoiceStatus = await _invoiceStatusRepository.fetchInvoiceStatus(
-          headerId, articleNo, lineId);
+          headerId, articleNo, lineId, pocId);
       emit(InvoiceStatusLoaded(invoiceStatus));
     } on Exception {
       emit(const InvoiceStatusError("Couldn't Fetch data!"));

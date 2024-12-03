@@ -12,11 +12,11 @@ class UpdateRfidCubit extends Cubit<UpdateRfidState> {
       : super(const UpdateRfidInitial());
 
   Future<void> updateRfid(
-      String detailsId, String rfid, String entryBy, String entryType) async {
+      String detailsId, String rfid, String entryBy, String entryType, String pocId, String checkStatus) async {
     try {
       emit(const UpdateRfidLoading());
       final responseData = await _updateDataRepository.fetchResponse(
-          detailsId, rfid, entryBy, entryType);
+          detailsId, rfid, entryBy, entryType, pocId, checkStatus);
       emit(UpdateRfidLoaded(responseData));
     } on Exception {
       emit(const UpdateRfidError("Couldn't Fetch roll!"));

@@ -10,10 +10,12 @@ import 'package:warehouse_app/cubit/fabric_code_Style/fabric_code_style_cubit.da
 import 'package:warehouse_app/cubit/inventory_cubit/inventory_cubit.dart';
 import 'package:warehouse_app/cubit/invoice_details/invoice_details_cubit.dart';
 import 'package:warehouse_app/cubit/invoice_status/invoice_status_cubit.dart';
+import 'package:warehouse_app/cubit/invoice_style/invoice_styles_cubit.dart';
 import 'package:warehouse_app/cubit/roll_data_cubit/roll_data_cubit.dart';
 import 'package:warehouse_app/models/fabric_code_style/fabric_code_style.dart';
 import 'package:warehouse_app/models/inventory.dart';
 import 'package:warehouse_app/models/invoice_details.dart';
+import 'package:warehouse_app/models/invoice_styles/invoice_styles.dart';
 import 'package:warehouse_app/models/login_object.dart';
 import 'package:warehouse_app/models/roll_data.dart';
 import 'package:warehouse_app/repository/fabric_code_style_repository/fabric_code_style_repo_impl.dart';
@@ -27,6 +29,7 @@ import 'package:warehouse_app/views/invoice_status_data.dart';
 import 'package:warehouse_app/views/widget/three_dot_menu_widget.dart';
 
 import '../cubit/update_rfid/update_rfid_cubit.dart';
+import '../repository/invoice_style_repo/invoice_style_repo_impl.dart';
 import 'logout_dialog.dart';
 
 TextEditingController? searchedText;
@@ -64,7 +67,7 @@ class HomePage extends StatelessWidget {
               text4: 'Refresh',
               value1: 1,
               value2: 2,
-              value3:3,
+              value3: 3,
               loginObject: loginObject,
             ),
             // LogoutWidget(),
@@ -96,6 +99,11 @@ class HomePage extends StatelessWidget {
             BlocProvider(
               create: (context) => (FabricCodeStyleCubit(
                 FabricCodeStyleRepoImpl(),
+              )),
+            ),
+            BlocProvider(
+              create: (context) => (InvoiceStylesCubit(
+                InvoiceStyleRepoImpl(),
               )),
             ),
           ],
@@ -146,9 +154,11 @@ class _HomePageViewState extends State<HomePageView> {
   String? headerId;
   String? headerId2;
   String? lineId;
+  String? pocId;
   String? invoiceNo;
   String? articleNo;
   String? styleNo;
+  String? productionStyleNo;
   String? detailsId;
   LoginObject? loginObject;
   String? rfid;
@@ -160,6 +170,8 @@ class _HomePageViewState extends State<HomePageView> {
   List<String> inventoryList = [];
   List<String> fabricCodeList = [];
   List<String> fabricCodeStyleList = [];
+  List<String> invoiceStyleList = [];
+  List<InvoiceStyles> invoiceStyles = [];
   List<String> fabricCodeList2 = [];
   List<RollData> rollData = <RollData>[];
   List<String> rollList = <String>[];
@@ -232,7 +244,7 @@ class _HomePageViewState extends State<HomePageView> {
                     if (state is InventoryInitial) {
                       return Container(
                         width: width * 0.98,
-                        margin: const EdgeInsets.only(top: 20, bottom: 20),
+                        margin: const EdgeInsets.only(top: 5, bottom: 5),
                         child: DropdownSearch<String>(
                           popupProps: const PopupProps.menu(
                             showSelectedItems: true,
@@ -265,7 +277,7 @@ class _HomePageViewState extends State<HomePageView> {
                       inventoryList.addAll(mapInventoryData(state.inventory));
                       return Container(
                         width: width * 0.98,
-                        margin: const EdgeInsets.only(top: 20, bottom: 20),
+                        margin: const EdgeInsets.only(top: 5, bottom: 5),
                         child: DropdownSearch<String>(
                           popupProps: const PopupProps.menu(
                             showSelectedItems: true,
@@ -320,7 +332,7 @@ class _HomePageViewState extends State<HomePageView> {
                           .addAll(mapFabricCodeData(state.invoiceDetails));
                       return Container(
                         width: width * 0.98,
-                        margin: const EdgeInsets.only(top: 20, bottom: 20),
+                        margin: const EdgeInsets.only(top: 5, bottom: 5),
                         child: DropdownSearch<String>(
                           popupProps: const PopupProps.menu(
                             showSelectedItems: true,
@@ -360,15 +372,16 @@ class _HomePageViewState extends State<HomePageView> {
                                       "0");
                                   context
                                       .read<InvoiceStatusCubit>()
-                                      .getInvoiceStatus(
-                                        headerId ?? "",
-                                        articleNo ?? "",
-                                        "null",
-                                      );
+                                      .getInvoiceStatus(headerId ?? "",
+                                          articleNo ?? "", "null", "");
                                   context
                                       .read<FabricCodeStyleCubit>()
                                       .getfabricCodetStyle(
                                           headerId ?? "", articleNo ?? "");
+                                  context
+                                      .read<InvoiceStylesCubit>()
+                                      .getInvoiceStyle(
+                                          headerId ?? "", articleNo ?? "", "");
                                 }
                               }
                               visible = true;
@@ -390,7 +403,7 @@ class _HomePageViewState extends State<HomePageView> {
                           mapFabricCodeStyleData(state.fabricCodeStyle));
                       return Container(
                         width: width * 0.98,
-                        margin: const EdgeInsets.only(top: 20, bottom: 20),
+                        margin: const EdgeInsets.only(top: 5, bottom: 5),
                         child: DropdownSearch<String>(
                           popupProps: const PopupProps.menu(
                             showSelectedItems: true,
@@ -428,11 +441,80 @@ class _HomePageViewState extends State<HomePageView> {
                                       "0");
                                   context
                                       .read<InvoiceStatusCubit>()
+                                      .getInvoiceStatus(headerId ?? "",
+                                          articleNo ?? "", lineId ?? "", "");
+
+                                  context
+                                      .read<InvoiceStylesCubit>()
+                                      .getInvoiceStyle(headerId ?? "",
+                                          articleNo ?? "", lineId ?? "");
+                                }
+                              }
+                              visible = true;
+                            });
+                          },
+                        ),
+                      );
+                    } else {
+                      return Container();
+                    }
+                  },
+                ),
+                BlocConsumer<InvoiceStylesCubit, InvoiceStylesState>(
+                  listener: (context, state) {},
+                  builder: (context, state) {
+                    if ((state is InvoiceStylesLoaded) && statusChanged) {
+                      invoiceStyleList.clear();
+                      invoiceStyleList.add("Select production style");
+                      invoiceStyleList.addAll(
+                          mapInvoiceStyleData(state.invoiceStyles ?? []));
+                      return Container(
+                        width: width * 0.98,
+                        margin: const EdgeInsets.only(top: 5, bottom: 5),
+                        child: DropdownSearch<String>(
+                          popupProps: const PopupProps.menu(
+                            showSelectedItems: true,
+                            showSearchBox: true,
+                          ),
+                          selectedItem:
+                              invoiceStyleList.contains(productionStyleNo)
+                                  ? productionStyleNo
+                                  : null,
+                          items: invoiceStyleList,
+                          dropdownDecoratorProps: const DropDownDecoratorProps(
+                            dropdownSearchDecoration: InputDecoration(
+                              labelText: "Select Production Style",
+                              labelStyle: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              productionStyleNo = newValue;
+                              if (newValue != null) {
+                                final index =
+                                    invoiceStyleList.indexOf(newValue);
+                                if (index != -1) {
+                                  pocId = index == 0
+                                      ? ""
+                                      : state.invoiceStyles?[index].pocId ?? "";
+
+                                  debugPrint(
+                                      "header_id: $headerId, article, $articleNo, line_id, $lineId");
+                                  // context.read<RollDataCubit>().getRollData(
+                                  //     headerId ?? "",
+                                  //     articleNo ?? "",
+                                  //     lineId ?? "",
+                                  //     "0");
+                                  context
+                                      .read<InvoiceStatusCubit>()
                                       .getInvoiceStatus(
-                                        headerId ?? "",
-                                        articleNo ?? "",
-                                        lineId ?? "",
-                                      );
+                                          headerId ?? "",
+                                          articleNo ?? "",
+                                          lineId ?? "",
+                                          pocId ?? "");
                                 }
                               }
                               visible = true;
@@ -465,25 +547,26 @@ class _HomePageViewState extends State<HomePageView> {
                                   });
                                 },
                               ),
-                              const Text("Search by supplier roll"),
+                              const Text("supplier roll"),
                             ],
                           ),
-                          const SizedBox(
-                            width: 20,
-                          ),
-                          Row(
-                            children: [
-                              Radio(
-                                value: 2,
-                                groupValue: selectedSearchOption,
-                                onChanged: (value) {
-                                  setState(() {
-                                    selectedSearchOption = value!;
-                                  });
-                                },
-                              ),
-                              const Text("Search by factory roll"),
-                            ],
+                          const Spacer(),
+                          Container(
+                            margin: const EdgeInsets.only(right: 20),
+                            child: Row(
+                              children: [
+                                Radio(
+                                  value: 2,
+                                  groupValue: selectedSearchOption,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedSearchOption = value!;
+                                    });
+                                  },
+                                ),
+                                const Text("factory roll"),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -491,12 +574,124 @@ class _HomePageViewState extends State<HomePageView> {
                         margin: const EdgeInsets.only(bottom: 10),
                         child: Column(
                           children: [
+                            BlocConsumer<InvoiceStatusCubit,
+                                InvoiceStatusState>(
+                              listener: (context, state) {},
+                              builder: (context, state) {
+                                if (state is InvoiceStatusLoaded) {
+                                  debugPrint(
+                                      "invoiceStatus ${state.invoiceStatus}");
+                                  return Card(
+                                    elevation: 5,
+                                    child: Container(
+                                      height: height * 0.08,
+                                      width: width,
+                                      color: const Color.fromARGB(
+                                          255, 224, 234, 255),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              const Text(
+                                                "Summary: ",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 18),
+                                              ),
+                                              const Spacer(),
+                                              const Text(
+                                                "Shaded: ",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15),
+                                              ),
+                                              Container(
+                                                margin: const EdgeInsets.only(
+                                                    right: 10),
+                                                child: Text(
+                                                  "${state.invoiceStatus?.shadedRoll ?? "0"} P",
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                      fontSize: 15),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Container(
+                                                margin: EdgeInsets.only(
+                                                  left: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      0.15,
+                                                ),
+                                                child: const Text(
+                                                  "Total: ",
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 15),
+                                                ),
+                                              ),
+                                              Text(
+                                                "${state.invoiceStatus?.totalRolls ?? "0"} P / ${state.invoiceStatus?.totalYards ?? "0"} Y",
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.normal,
+                                                    fontSize: 15),
+                                              ),
+                                              Spacer(),
+                                              const Text(
+                                                "Attached: ",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15),
+                                              ),
+                                              Container(
+                                                margin: const EdgeInsets.only(
+                                                    right: 10),
+                                                child: Text(
+                                                  "${state.invoiceStatus?.attachedRoll ?? "0"} P / ${state.invoiceStatus?.attachedLength ?? "0"} Y",
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                      fontSize: 15),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return Container();
+                                }
+                              },
+                            ),
                             Row(
                               children: [
                                 Container(
                                     alignment: Alignment.topLeft,
                                     padding: const EdgeInsets.only(left: 20),
                                     child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blue,
+                                            fixedSize: Size(
+                                                MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.9,
+                                                20),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(15))),
                                         onPressed: () {
                                           if (showAll == "Show All") {
                                             debugPrint(
@@ -525,7 +720,12 @@ class _HomePageViewState extends State<HomePageView> {
                                             }
                                           });
                                         },
-                                        child: Text(showAll))),
+                                        child: Text(
+                                          showAll,
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 20),
+                                        ))),
                                 const Spacer(),
                                 Visibility(
                                   visible:
@@ -555,90 +755,6 @@ class _HomePageViewState extends State<HomePageView> {
                                 )
                               ],
                             ),
-                            BlocConsumer<InvoiceStatusCubit,
-                                InvoiceStatusState>(
-                              listener: (context, state) {},
-                              builder: (context, state) {
-                                if (state is InvoiceStatusLoaded) {
-                                  debugPrint(
-                                      "invoiceStatus ${state.invoiceStatus}");
-                                  return Card(
-                                    child: Container(
-                                      height: height * 0.1,
-                                      width: width,
-                                      color: const Color.fromARGB(
-                                          255, 255, 246, 246),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            "Summary",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 20,
-                                            ),
-                                          ),
-                                          Row(
-                                            children: [
-                                              Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    "Total Rolls: ${state.invoiceStatus?.totalRolls ?? "0"} Pcs",
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15),
-                                                  ),
-                                                  Text(
-                                                    "Total Length: ${state.invoiceStatus?.totalYards ?? "0"} Yards",
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15),
-                                                  ),
-                                                ],
-                                              ),
-                                              const Spacer(),
-                                              Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    "Attached Rolls: ${state.invoiceStatus?.attachedRoll ?? "0"}",
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15),
-                                                  ),
-                                                  Text(
-                                                    "Attached Length: ${state.invoiceStatus?.attachedLength ?? "0"}",
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                } else {
-                                  return Container();
-                                }
-                              },
-                            ),
                           ],
                         ),
                       ),
@@ -649,7 +765,7 @@ class _HomePageViewState extends State<HomePageView> {
                   children: [
                     Visibility(
                       visible: selectedSearchOption == 1,
-                      child: searchacbleRollList(
+                      child: SearchacbleRollList(
                         value: selectedSearchOption,
                         height: height,
                         width: width,
@@ -659,6 +775,7 @@ class _HomePageViewState extends State<HomePageView> {
                         articleNo: articleNo,
                         lineId: lineId,
                         rfid: rfid,
+                        pocId: pocId ?? "",
                         invoiceNo: invoiceNo,
                         rollData: rollData,
                         text: "Search Supplier Roll",
@@ -666,7 +783,7 @@ class _HomePageViewState extends State<HomePageView> {
                     ),
                     Visibility(
                       visible: selectedSearchOption == 2,
-                      child: searchacbleRollList(
+                      child: SearchacbleRollList(
                         value: selectedSearchOption,
                         height: height,
                         width: width,
@@ -676,6 +793,7 @@ class _HomePageViewState extends State<HomePageView> {
                         articleNo: articleNo,
                         lineId: lineId,
                         rfid: rfid,
+                        pocId: pocId ?? "",
                         invoiceNo: invoiceNo,
                         rollData: rollData,
                         text: "Search Factory Roll",
@@ -692,8 +810,8 @@ class _HomePageViewState extends State<HomePageView> {
   }
 }
 
-class searchacbleRollList extends StatelessWidget {
-  searchacbleRollList({
+class SearchacbleRollList extends StatelessWidget {
+  SearchacbleRollList({
     super.key,
     required this.height,
     required this.width,
@@ -706,6 +824,7 @@ class searchacbleRollList extends StatelessWidget {
     required this.invoiceNo,
     required this.rollData,
     required this.text,
+    required this.pocId,
     required this.value,
   });
 
@@ -719,6 +838,7 @@ class searchacbleRollList extends StatelessWidget {
   final String? rfid;
   final String? invoiceNo;
   final String text;
+  final String pocId;
   final int value;
   List<RollData> rollData;
 
@@ -728,6 +848,7 @@ class searchacbleRollList extends StatelessWidget {
       listener: (context, state) {},
       builder: (context, state) {
         if (state is RollDataLoaded) {
+          debugPrint("rollData, $rollData");
           rollData.clear();
           rollData = state.rolldata;
           debugPrint(rollData.toString());
@@ -746,9 +867,11 @@ class searchacbleRollList extends StatelessWidget {
                   qrData: qrData,
                   headerId: headerId,
                   articleNo: articleNo,
+                  pocId: pocId,
                   lineId: lineId,
                   rfid: rfid,
                   invoiceNo: invoiceNo,
+                  shadeStatus: rollData.shadeStatus,
                 ),
               ),
               asyncListCallback: () async {
@@ -805,23 +928,28 @@ class RollItem extends StatefulWidget {
   String? lineId;
   String? rfid;
   String? invoiceNo;
+  String? pocId;
   int value;
+  String? shadeStatus;
 
   // final index;
 
-  RollItem({
-    Key? key,
-    required this.rollData,
-    required this.value,
-    this.qrData,
-    this.headerId,
-    this.articleNo,
-    this.lineId,
-    this.loginObject,
-    this.rfid,
-    this.invoiceNo,
-    // required this.index,
-  }) : super(key: key);
+  RollItem(
+      {Key? key,
+      required this.rollData,
+      required this.value,
+      this.qrData,
+      this.headerId,
+      this.articleNo,
+      this.lineId,
+      this.loginObject,
+      this.rfid,
+      this.pocId,
+      this.invoiceNo,
+      this.shadeStatus
+      // required this.index,
+      })
+      : super(key: key);
 
   @override
   State<RollItem> createState() => _RollItemState();
@@ -829,8 +957,17 @@ class RollItem extends StatefulWidget {
 
 class _RollItemState extends State<RollItem> {
   String? result;
+  late bool isChecked;
+  @override
+  void initState() {
+    isChecked = widget.shadeStatus == "1" ? true : false;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    debugPrint("shadeStatus ${widget.shadeStatus}");
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -900,12 +1037,29 @@ class _RollItemState extends State<RollItem> {
               ],
             ),
             BlocConsumer<UpdateRfidCubit, UpdateRfidState>(
-              listener: (context, state) {},
+              listener: (context, state) {
+                if (state is UpdateRfidLoaded) {
+                  if (state.response.response ==
+                      "Data update successful check!") {
+                    setState(() {
+                      debugPrint("Ghere, $isChecked");
+                      isChecked = !isChecked;
+                      debugPrint("Ghere, $isChecked");
+                    });
+
+                    // context.read<RollDataCubit>().getRollData(
+                    //     widget.headerId ?? "",
+                    //     widget.articleNo ?? "",
+                    //     widget.lineId ?? "null",
+                    //     "0");
+                  }
+                }
+              },
               builder: (context, state) {
                 if (state is UpdateRfidLoaded) {
                   debugPrint(
                       "state_res ${state.response.response}, ${widget.headerId}, ${widget.lineId}");
-                  if (state.response.response != "Data update unsuccessful!") {
+                  if (state.response.response == "Data update successful!") {
                     context.read<RollDataCubit>().getRollData(
                         widget.headerId ?? "",
                         widget.articleNo ?? "",
@@ -918,68 +1072,115 @@ class _RollItemState extends State<RollItem> {
                     context.read<InvoiceStatusCubit>().getInvoiceStatus(
                         widget.headerId ?? "",
                         widget.articleNo ?? "",
-                        widget.lineId ?? "null");
+                        widget.lineId ?? "null",
+                        "");
+                  } else if (state.response.response ==
+                      "Data update successful check!") {
+                    debugPrint(
+                        "update_status ${widget.headerId}, ${widget.articleNo}");
+
+                    context.read<InvoiceStatusCubit>().getInvoiceStatus(
+                        widget.headerId ?? "",
+                        widget.articleNo ?? "",
+                        widget.lineId ?? "null",
+                        "");
                   }
                 }
                 return Container();
               },
             ),
             const Spacer(),
-            ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(10, 55),
-                  padding: const EdgeInsets.only(left: 4, right: 4),
-                ),
-                onPressed: () async {
-                  // QrBarCodeScannerDialog().getScannedQrBarCode(
-                  //     context: context,
-                  //     onCode: (code) {
-                  //       setState(() {
-                  //         result = code;
-                  //         debugdebugPrint("$result");
-                  //         context.read<UpdateRfidCubit>().updateRfid(
-                  //             widget.rollData.detailId,
-                  //             result ?? "12345",
-                  //             widget.loginObject?.employeeNumber ?? "",
-                  //             "1");
+            Column(
+              children: [
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(10, 55),
+                        padding: const EdgeInsets.only(left: 4, right: 4),
+                        backgroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        )),
+                    onPressed: () async {
+                      // QrBarCodeScannerDialog().getScannedQrBarCode(
+                      //     context: context,
+                      //     onCode: (code) {
+                      //       setState(() {
+                      //         result = code;
+                      //         debugdebugPrint("$result");
+                      //         context.read<UpdateRfidCubit>().updateRfid(
+                      //             widget.rollData.detailId,
+                      //             result ?? "12345",
+                      //             widget.loginObject?.employeeNumber ?? "",
+                      //             "1");
 
-                  //         // context.read<UpdateRfidCubit>().updateRfid(detailsId, rfid, entryBy, entryType)
-                  //       });
-                  //     });
-                  // _turnOnFlash(context);
-                  var res = await BarcodeScanner.scan(
-                      options: const ScanOptions(
-                          autoEnableFlash: true,
-                          android: AndroidOptions(
-                              useAutoFocus: true, aspectTolerance: 20.2)));
-                  //  .scanBarcode(
-                  //     "#ff6666", "Cancel", false, ScanMode.DEFAULT);
-                  // await Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) => SimpleBarcodeScannerPage(
-                  //         isShowFlashIcon: true,
-                  //         scanType: ScanType.barcode,
-                  //         appBarTitle:
-                  //             "Scan for roll no: ${widget.rollData.factoryRoll}",
-                  //       ),
-                  //     ));
-                  setState(() {
-                    if (res.rawContent != '-1') {
-                      result = res.rawContent;
-                      debugPrint("res_ba_c: $result");
+                      //         // context.read<UpdateRfidCubit>().updateRfid(detailsId, rfid, entryBy, entryType)
+                      //       });
+                      //     });
+                      // _turnOnFlash(context);
+                      var res = await BarcodeScanner.scan(
+                          options: const ScanOptions(
+                              autoEnableFlash: true,
+                              android: AndroidOptions(
+                                  useAutoFocus: true, aspectTolerance: 20.2)));
+                      //  .scanBarcode(
+                      //     "#ff6666", "Cancel", false, ScanMode.DEFAULT);
+                      // await Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //       builder: (context) => SimpleBarcodeScannerPage(
+                      //         isShowFlashIcon: true,
+                      //         scanType: ScanType.barcode,
+                      //         appBarTitle:
+                      //             "Scan for roll no: ${widget.rollData.factoryRoll}",
+                      //       ),
+                      //     ));
+                      setState(() {
+                        if (res.rawContent != '-1') {
+                          result = res.rawContent;
+                          debugPrint(
+                              "res_ba_c: $result, poc_id:${widget.pocId}");
+                          context.read<UpdateRfidCubit>().updateRfid(
+                              widget.rollData.detailId,
+                              result ?? "12345",
+                              widget.loginObject?.employeeNumber ?? "",
+                              "1",
+                              widget.pocId ?? "",
+                              "0");
+                        }
+                      });
+                    },
+                    child: const Icon(
+                      Icons.qr_code_2,
+                      color: Colors.white,
+                      size: 40,
+                    )),
+                Container(
+                  margin: const EdgeInsets.only(right: 5),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: isChecked ? Colors.red : Colors.green,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        )),
+                    onPressed: () {
+                      debugPrint(
+                          "Update data: ${widget.rollData.detailId}, $result, ${widget.loginObject?.employeeName}, 1, ${widget.pocId}, 1");
                       context.read<UpdateRfidCubit>().updateRfid(
                           widget.rollData.detailId,
                           result ?? "12345",
                           widget.loginObject?.employeeNumber ?? "",
-                          "1");
-                    }
-                  });
-                },
-                child: const Icon(
-                  Icons.qr_code_2,
-                  size: 40,
-                ))
+                          "1",
+                          widget.pocId ?? "",
+                          isChecked ? "0" : "1");
+                    },
+                    child: Text(
+                      isChecked ? "Uncheck" : "Check",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                )
+              ],
+            )
           ],
         ),
       ),
@@ -1020,6 +1221,11 @@ List<String> mapFabricCodeData(List<InvoiceDetails> elementList) {
 List<String> mapFabricCodeStyleData(List<FabricCodeStyle> elementList) {
   // return Map.fromIterable(elementList, key: (element) => ,)
   return elementList.map((e) => e.styleNo.toString()).toList();
+}
+
+List<String> mapInvoiceStyleData(List<InvoiceStyles> elementList) {
+  // return Map.fromIterable(elementList, key: (element) => ,)
+  return elementList.map((e) => e.style.toString()).toList();
 }
 
 List<String> mapRollList(List<RollData> elementList) {

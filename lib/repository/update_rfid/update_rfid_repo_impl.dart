@@ -6,7 +6,7 @@ import '../../service/web_service.dart';
 class UpdateDataRepoImpl implements UpdateDataRepository {
   @override
   Future<ResponseObject> fetchResponse(
-      String detailsId, String rfid, String entryBy, String entryType) {
-    return WebService().getResponseObject(detailsId, rfid, entryBy, entryType);
+      String detailsId, String rfid, String entryBy, String entryType, String pocId, String checkStatus) {
+    return WebService().getResponseObject(detailsId, rfid, entryBy, entryType, pocId, checkStatus);
   }
 }

@@ -276,7 +276,9 @@ class _QRViewExampleState extends State<QRViewExample> {
                 detailId,
                 result?.code.toString() ?? "",
                 loginObject?.employeeNumber ?? "",
-                entryType);
+                entryType,
+                "",
+                "0");
           }
         }
       });

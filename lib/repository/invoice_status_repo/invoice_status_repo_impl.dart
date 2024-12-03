@@ -5,7 +5,7 @@ import '../../service/web_service.dart';
 
 class InvoiceStatusRepoImpl implements InvoiceStatusRepository {
   @override
-  Future<InvoiceStatus> fetchInvoiceStatus(String headerId, String articleNO, String lineId) {
-    return WebService().getInvoiceStatus(headerId, articleNO, lineId);
+  Future<InvoiceStatus> fetchInvoiceStatus(String headerId, String articleNO, String lineId, String pocId) {
+    return WebService().getInvoiceStatus(headerId, articleNO, lineId, pocId);
   }
 }
